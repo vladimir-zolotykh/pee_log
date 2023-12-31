@@ -1,9 +1,12 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 # PYTHON_ARGCOMPLETE_OK
+import os
 import argcomplete
 import argparse
 import sqlite3
+import datetime
+import parse_date
 
 
 parser = argparse.ArgumentParser(
@@ -16,6 +19,8 @@ parser.add_argument('--db-file', help='Db file', default='pee_log.db')
 if __name__ == '__main__':
     argcomplete.autocomplete(parser)
     args = parser.parse_args()
+    if os.path.exists(args.db_file):
+        raise sqlite3.OperationalError(f"{args.db_file}: already exists")
     with sqlite3.connect(args.db_file) as conn:
         conn.execute('''
             CREATE TABLE IF NOT EXISTS pee_log (
@@ -28,10 +33,12 @@ if __name__ == '__main__':
                 if not line:
                     continue
                 if line_str.startswith('***'):
-                    pass
+                    year, month, day = parse_date.parse_date(line)
                 else:
-                    # print(f'{line_no = }, {line = }')
+                    hour, minute = int(line[:2]), int(line[2:])
+                    pee_time = datetime.datetime(year, month, day,
+                                                 hour, minute)
                     conn.execute('''
                         INSERT INTO pee_log (pee_time)
                         VALUES (?)
-                    ''', (line, ))
+                    ''', (pee_time, ))
