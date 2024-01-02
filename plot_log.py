@@ -8,13 +8,11 @@ import datetime
 import matplotlib.pyplot as plt
 
 
-def count_1hour_logs(req_dt: datetime.datetime):
-    """Count all the logs recorded at the hour REQ_DT.hour hour"""
-
-    return len(list(filter(
-        lambda d: d.hour == req_dt.hour,
-        (datetime.datetime.strptime(d[0], '%Y-%m-%d %H:%M:%S')
-         for d in conn.execute('SELECT pee_time FROM pee_log')))))
+def count_1hour_logs(conn, req_dt: datetime.datetime):
+    """Count all the logs recorded at the REQ_DT.hour"""
+    query, fmt = 'SELECT pee_time FROM pee_log', '%Y-%m-%d %H:%M:%S'
+    return sum(1 for row in conn.execute(query)
+               if datetime.datetime.strptime(row[0], fmt).hour == req_dt.hour)
 
 
 parser = argparse.ArgumentParser(
@@ -33,7 +31,8 @@ if __name__ == '__main__':
         y = [0] * 24
         for h in range(24):
             time = datetime.time(h, 0, 0)
-            y[h] = count_1hour_logs(datetime.datetime.combine(args.date, time))
+            y[h] = count_1hour_logs(conn,
+                                    datetime.datetime.combine(args.date, time))
         plt.bar(range(24), y, color='blue', alpha=0.7)
         plt.xlabel('Hour of the day')
         plt.ylabel('Pees')
