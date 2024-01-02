@@ -34,9 +34,8 @@ if __name__ == '__main__':
         for h in range(24):
             time = datetime.time(h, 0, 0)
             y[h] = count_1hour_logs(datetime.datetime.combine(args.date, time))
-        plt.plot(x, y, label=args.date)
-        plt.xlabel('Hours')
-        plt.ylabel('Pee')
-        plt.title('Pee')
-        plt.legend()
+        plt.bar(range(24), y, color='blue', alpha=0.7)
+        plt.xlabel('Hour of the day')
+        plt.ylabel('Pees')
+        plt.title('Pee Log')
         plt.show()
