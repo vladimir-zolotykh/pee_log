@@ -21,7 +21,8 @@ parser = argparse.ArgumentParser(
 parser.add_argument('--db-file', help='Db file', default='pee_log.db')
 parser.add_argument(
     '--date', help='Plot samples of that date',
-    default=datetime.date.fromisoformat('2023-12-31'))
+    type=datetime.date.fromisoformat, default='2023-12-30')
+
 
 if __name__ == '__main__':
     argcomplete.autocomplete(parser)
@@ -36,5 +37,5 @@ if __name__ == '__main__':
         plt.bar(range(24), y, color='blue', alpha=0.7)
         plt.xlabel('Hour of the day')
         plt.ylabel('Pees')
-        plt.title('Pee Log')
+        plt.title(f'Pee Log {args.date}')
         plt.show()
