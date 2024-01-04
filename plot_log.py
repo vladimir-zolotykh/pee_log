@@ -24,17 +24,20 @@ parser.add_argument(
     type=datetime.date.fromisoformat, default='2023-12-30')
 
 
+NPARTS = 24 * 4
+TICK = 15
 if __name__ == '__main__':
     argcomplete.autocomplete(parser)
     args = parser.parse_args()
     with sqlite3.connect(f"file:{args.db_file}?mode=ro",  uri=True) as conn:
-        x = list(range(24))
-        y = [0] * 24
-        for h in range(24):
-            time = datetime.time(h, 0, 0)
+        x = list(range(NPARTS))
+        y = [0] * NPARTS
+        for h in range(NPARTS):
+            time = datetime.time(h // 60, h % 60, 0)
+            print(f'{time = }')
             y[h] = count_1hour_logs(conn,
                                     datetime.datetime.combine(args.date, time))
-        plt.bar(range(24), y, color='blue', alpha=0.7)
+        plt.bar(range(NPARTS), y, color='blue', alpha=0.7)
         plt.xlabel('Hour of the day')
         plt.ylabel('Pees')
         plt.title(f'Pee Log {args.date}')
