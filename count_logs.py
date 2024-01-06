@@ -17,7 +17,16 @@ def tick(min, len=20):
     return min // len
 
 
-def print_hits(len=20):
-    for k, g in itertools.groupby(mins, lambda min: tick(min, len=len)):
-        # print(f'{k}: {len(list(g))}')
-        print('{:3d}: {:3d}'.format(k, sum(1 for h in g)))
+def groupby_hits(mins, len=20):
+    """Returns a dict {tick: hits, ...}
+
+    Where TICK is the tick (of an hour) number, HITS - how many logs
+    was recorderd within this TICK"""
+
+    return {k: sum(1 for h in g) for k, g
+            in itertools.groupby(mins, lambda min: tick(min, len=len))}
+
+
+def print_hits(mins, len=20):
+    for tick_no, num_hits in groupby_hits(mins, len=len).items():
+        print('{:3d}: {:3d}'.format(tick_no, num_hits))
