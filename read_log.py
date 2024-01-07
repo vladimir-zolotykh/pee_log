@@ -34,6 +34,7 @@ if __name__ == '__main__':
                 pee_time TEXT UNIQUE)
         ''')
         with open(args.log_file) as log_file:
+            err_no = 0
             for line_no, line_str in enumerate(log_file.readlines()):
                 line = line_str.rstrip()
                 if not line:
@@ -50,6 +51,9 @@ if __name__ == '__main__':
                             VALUES (?)
                         ''', (pee_time, ))
                     except sqlite3.IntegrityError as e:
+                        if err_no < 1:  # print only one error
+                            print(f'{line_no}: {e}')
+                            err_no += 1
                         if args.ignore_duplicates:
                             pass
                         else:
