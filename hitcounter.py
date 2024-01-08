@@ -94,6 +94,13 @@
  69: 0,
  70: 0,
  71: 1}
+>>> list_cnt_expected = [
+...    0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0,
+...    0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 1, 0, 0, 1, 1, 1, 0, 2, 1,
+...    1, 2, 0, 1, 1, 1, 0, 0, 1, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 1, 0, 0,
+...    0, 1, 0, 0, 0, 1
+... ]
+>>> assert list(cnt) == list_cnt_expected
 """
 
 import math
@@ -108,9 +115,15 @@ class HitCounter:
     tick_len = TICK_LEN
 
     def __init__(self, tick_len=TICK_LEN):
-        # initialize HITS
+        """Initialize self.hits"""
+
+        self.num_hits = math.ceil(24 * 60 / tick_len)
         self.hits = {tick_no: 0 for tick_no
-                     in range(math.ceil(24 * 60 / tick_len))}
+                     in range(self.num_hits)}
+
+    def __iter__(self):
+        for tick_no in self.hits:
+            yield self.hits[tick_no]
 
     def minute_to_tick(self, minute):
         """Convert MINUTE to TICK number"""
