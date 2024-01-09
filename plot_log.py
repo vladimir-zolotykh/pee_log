@@ -4,17 +4,9 @@
 import argcomplete
 import argparse
 import sqlite3
-import datetime as dt
+import datetime
 import matplotlib.pyplot as plt
-
-
-def count_1hour_logs(conn, req_dt: dt.datetime):
-    """Count all the logs recorded at the REQ_DT.hour"""
-    query, fmt = 'SELECT pee_time FROM pee_log', '%Y-%m-%d %H:%M:%S'
-    return sum(1 for row in conn.execute(query)
-               if (dt.datetime.strptime(row[0], fmt).hour == req_dt.hour
-                   and (dt.datetime.strptime(row[0], fmt).minute % TICK
-                        == req_dt.minute)))
+from hitcounter import HitCounter
 
 
 parser = argparse.ArgumentParser(
@@ -23,23 +15,37 @@ parser = argparse.ArgumentParser(
 parser.add_argument('--db-file', help='Db file', default='pee_log.db')
 parser.add_argument(
     '--date', help='Plot samples of that date',
-    type=dt.date.fromisoformat, default='2023-12-30')
+    type=datetime.date.fromisoformat, default='2023-12-30')
+parser.add_argument(
+    '--tick-len', help="A day is divided to TICKS (in minutes)",
+    type=int, choices=[15, 20, 30], default=20)
 
 
-NPARTS = 24 * 4
-TICK = 15
+def time_to_minute(row, fmt='%Y-%m-%d %H:%M:%S'):
+    dt = datetime.datetime.strptime(row[0], fmt)
+    return dt.hour * 60 + dt.minute
+
+
 if __name__ == '__main__':
     argcomplete.autocomplete(parser)
     args = parser.parse_args()
+    num_ticks = 24 * 60 // args.tick_len
+    hit_cnt = HitCounter(args.tick_len)
     with sqlite3.connect(f"file:{args.db_file}?mode=ro",  uri=True) as conn:
-        x = list(range(NPARTS))
-        y = [0] * NPARTS
-        for h in range(NPARTS):
-            time = dt.time(h // 60, h % 60, 0)
-            y[h] = count_1hour_logs(conn,
-                                    dt.datetime.combine(args.date, time))
-        plt.bar(range(NPARTS), y, color='blue', alpha=0.7)
-        plt.xlabel('Hour of the day')
+        cursor = conn.cursor()
+        query = """
+            SELECT pee_time, strftime('%Y-%m-%d', pee_time) as pee_day
+            FROM pee_log
+            WHERE pee_day = ?
+        """
+        cursor.execute(query, (args.date.strftime('%Y-%m-%d'),))
+        rows = cursor.fetchall()
+        mins_list = [time_to_minute(row) for row in rows]
+        hit_cnt.count(mins_list)
+        x = list(range(num_ticks))
+        y = list(hit_cnt)
+        plt.bar(x, y, color='blue', alpha=0.7)
+        plt.xlabel(f'"Ticks"({args.tick_len}mins) of the day')
         plt.ylabel('Pees')
         plt.title(f'Pee Log {args.date}')
         plt.show()
