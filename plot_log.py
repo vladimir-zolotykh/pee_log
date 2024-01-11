@@ -19,7 +19,7 @@ parser.add_argument(
     type=datetime.date.fromisoformat, default='2023-12-30')
 parser.add_argument(
     '--tick-len', help="A day is divided to TICKS (in minutes)",
-    type=int, choices=[15, 20, 30], default=20)
+    type=int, choices=[5, 10, 15, 20, 30, 60], default=20)
 
 
 def time_to_minute(row, fmt='%Y-%m-%d %H:%M:%S'):
