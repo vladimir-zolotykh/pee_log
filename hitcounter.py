@@ -117,9 +117,8 @@ class HitCounter:
     def __init__(self, tick_len=TICK_LEN):
         """Initialize self.hits"""
 
-        self.num_hits = math.ceil(24 * 60 / tick_len)
-        self.hits = {tick_no: 0 for tick_no
-                     in range(self.num_hits)}
+        self.hits = {self.minute_to_tick(minute): 0
+                     for minute in range(24 * 60)}
 
     def __iter__(self):
         for tick_no in self.hits:
