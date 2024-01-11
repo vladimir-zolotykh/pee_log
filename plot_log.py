@@ -5,6 +5,7 @@ import argcomplete
 import argparse
 import sqlite3
 import datetime
+from pprint import pprint
 import matplotlib.pyplot as plt
 from hitcounter import HitCounter
 
@@ -41,11 +42,12 @@ if __name__ == '__main__':
         cursor.execute(query, (args.date.strftime('%Y-%m-%d'),))
         rows = cursor.fetchall()
         mins_list = [time_to_minute(row) for row in rows]
+        print(f'{len(mins_list) = }')
         hit_cnt.count(mins_list)
-        x = list(range(num_ticks))
-        y = list(hit_cnt)
+        x, y = zip(*[(tick_no, hum_hits)
+                     for tick_no, hum_hits in hit_cnt.hits.items()])
         plt.bar(x, y, color='blue', alpha=0.7)
-        plt.xlabel(f'"Ticks"({args.tick_len}mins) of the day')
+        plt.xlabel(f'{args.tick_len} mins')
         plt.ylabel('Pees')
-        plt.title(f'Pee Log {args.date}')
+        plt.title(f'{args.date} ({len(x)})')
         plt.show()
