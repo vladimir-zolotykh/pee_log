@@ -42,7 +42,6 @@ if __name__ == '__main__':
         cursor.execute(query, (args.date.strftime('%Y-%m-%d'),))
         rows = cursor.fetchall()
         mins_list = [time_to_minute(row) for row in rows]
-        print(f'{len(mins_list) = }')
         hit_cnt.count(mins_list)
         x, y = zip(*[(tick_no, hum_hits)
                      for tick_no, hum_hits in hit_cnt.hits.items()])

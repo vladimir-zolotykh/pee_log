@@ -126,7 +126,6 @@ class HitCounter:
 
     def minute_to_tick(self, minute):
         """Convert MINUTE to TICK number"""
-
         return minute // self.tick_len
 
     def count(self, logs):
