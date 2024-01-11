@@ -112,11 +112,10 @@ sample_logs = [                        # in minutes
 
 
 class HitCounter:
-    tick_len = TICK_LEN
-
     def __init__(self, tick_len=TICK_LEN):
         """Initialize self.hits"""
 
+        self.tick_len = tick_len
         self.hits = {self.minute_to_tick(minute): 0
                      for minute in range(24 * 60)}
 
