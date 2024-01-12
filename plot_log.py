@@ -5,9 +5,16 @@ import argcomplete
 import argparse
 import sqlite3
 import datetime
-from pprint import pprint
 import matplotlib.pyplot as plt
 from hitcounter import HitCounter
+
+
+class Formatter:
+    def __init__(self, ax):
+        self.ax = ax
+
+    def format_coord(self, x, y):
+        return f'Custom X: {x:.2f}, Custom Y: {y:.2f}'
 
 
 parser = argparse.ArgumentParser(
@@ -45,8 +52,11 @@ if __name__ == '__main__':
         hit_cnt.count(mins_list)
         x, y = zip(*[(tick_no, hum_hits)
                      for tick_no, hum_hits in hit_cnt.hits.items()])
-        plt.bar(x, y, color='blue', alpha=0.7)
-        plt.xlabel(f'{args.tick_len} mins')
+        fig, ax = plt.subplots()
+        ax.bar(x, y, color='blue', alpha=0.7)
+        formatter = Formatter(ax)
+        ax.format_coord = formatter.format_coord
+        plt.xlabel(f'{args.tick_len} min interval')
         plt.ylabel('Pees')
         plt.title(f'{args.date} ({len(x)})')
         plt.show()
