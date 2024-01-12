@@ -10,11 +10,15 @@ from hitcounter import HitCounter
 
 
 class Formatter:
-    def __init__(self, ax):
+    def __init__(self, ax, tick_len=None):
+        self.tick_len = tick_len if tick_len else 20  # mins
         self.ax = ax
 
     def format_coord(self, x, y):
-        return f'Custom X: {x:.2f}, Custom Y: {y:.2f}'
+        """Convert X to HH:MM"""
+
+        hour, minute = divmod(int(x) * self.tick_len, 60)
+        return f'x={x:.2f} ({hour:02d}:{minute:02d})'
 
 
 parser = argparse.ArgumentParser(
@@ -54,7 +58,7 @@ if __name__ == '__main__':
                      for tick_no, hum_hits in hit_cnt.hits.items()])
         fig, ax = plt.subplots()
         ax.bar(x, y, color='blue', alpha=0.7)
-        formatter = Formatter(ax)
+        formatter = Formatter(ax, tick_len=args.tick_len)
         ax.format_coord = formatter.format_coord
         plt.xlabel(f'{args.tick_len} min interval')
         plt.ylabel('Pees')
