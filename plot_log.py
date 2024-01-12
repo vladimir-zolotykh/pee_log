@@ -7,6 +7,7 @@ import sqlite3
 import datetime
 import matplotlib.pyplot as plt
 from hitcounter import HitCounter
+bar_index = 0
 
 
 class Formatter:
@@ -16,9 +17,10 @@ class Formatter:
 
     def format_coord(self, x, y):
         """Convert X to HH:MM"""
-
-        hour, minute = divmod(int(x) * self.tick_len, 60)
-        return f'x={x:.2f} ({hour:02d}:{minute:02d})'
+        global bar_index
+        x2 = bar_index if bar_index else 0
+        hour, minute = divmod(int(x2) * self.tick_len, 60)
+        return f'x={x:.2f} x2={x2:.2f} ({hour:02d}:{minute:02d})'
 
 
 parser = argparse.ArgumentParser(
@@ -57,10 +59,21 @@ if __name__ == '__main__':
         x, y = zip(*[(tick_no, hum_hits)
                      for tick_no, hum_hits in hit_cnt.hits.items()])
         fig, ax = plt.subplots()
-        ax.bar(x, y, color='blue', alpha=0.7)
+        bars = ax.bar(x, y, color='blue', alpha=0.7)
+
+        def hover(event):
+            global bar_index
+            bar_index = None
+            for bar in bars:
+                contains, _ = bar.contains(event)
+                if contains:
+                    bar_index = bars.index(bar)
+                    # print(f'Hovered over Bar {bar_index + 1}')
+
         formatter = Formatter(ax, tick_len=args.tick_len)
         ax.format_coord = formatter.format_coord
         plt.xlabel(f'{args.tick_len} min interval')
         plt.ylabel('Pees')
         plt.title(f'{args.date} ({len(x)})')
+        fig.canvas.mpl_connect('motion_notify_event', hover)
         plt.show()
