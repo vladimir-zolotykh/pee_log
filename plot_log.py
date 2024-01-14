@@ -36,7 +36,7 @@ parser.add_argument(
     type=datetime.date.fromisoformat, default='2023-12-30')
 parser.add_argument(
     '--tick-len', help="A day is divided to TICKS (in minutes)",
-    type=int, choices=[5, 10, 15, 20, 30, 60], default=20)
+    type=int, choices=[5, 10, 15, 20, 30, 60], nargs='+', default=20)
 
 
 def time_to_minute(row, fmt='%Y-%m-%d %H:%M:%S'):
@@ -47,8 +47,7 @@ def time_to_minute(row, fmt='%Y-%m-%d %H:%M:%S'):
 if __name__ == '__main__':
     argcomplete.autocomplete(parser)
     args = parser.parse_args()
-    num_ticks = 24 * 60 // args.tick_len
-    hit_cnt = HitCounter(args.tick_len)
+    # num_ticks = 24 * 60 // args.tick_len
     with sqlite3.connect(f"file:{args.db_file}?mode=ro",  uri=True) as conn:
         cursor = conn.cursor()
         query = """
@@ -59,17 +58,22 @@ if __name__ == '__main__':
         cursor.execute(query, (args.date.strftime('%Y-%m-%d'),))
         rows = cursor.fetchall()
         mins_list = [time_to_minute(row) for row in rows]
-        hit_cnt.count(mins_list)
-        x, y = zip(*[(tick_no, hum_hits)
-                     for tick_no, hum_hits in hit_cnt.hits.items()])
-        fig, ax = plt.subplots()
-        bars = ax.bar(x, y, align='center', color='blue', alpha=0.7)
-        bar_bounds = [(bar.get_x(), bar.get_x() + bar.get_width())
-                      for bar in bars]
-        formatter = Formatter(ax, bar_bounds, tick_len=args.tick_len)
-        ax.format_coord = formatter.format_coord
-        plt.xlabel(f'{args.tick_len} min interval')
-        plt.ylabel('Pees')
-        plt.title(f'{args.date} ({len(x)})')
-        # fig.canvas.mpl_connect('motion_notify_event', hover)
+
+        def make_figure(tlen):
+            hit_cnt = HitCounter(tlen)
+            hit_cnt.count(mins_list)
+            x, y = zip(*[(tick_no, hum_hits)
+                         for tick_no, hum_hits in hit_cnt.hits.items()])
+            fig, ax = plt.subplots()
+            bars = ax.bar(x, y, align='center', color='blue', alpha=0.7)
+            bar_bounds = [(bar.get_x(), bar.get_x() + bar.get_width())
+                          for bar in bars]
+            formatter = Formatter(ax, bar_bounds, tick_len=tlen)
+            ax.format_coord = formatter.format_coord
+            ax.set_title(f'{args.date} ({len(x)} intervals)')
+            ax.set_xlabel(f'{tlen} mins interval')
+            ax.set_ylabel('Number of Logs')
+
+        for tlen in args.tick_len:
+            make_figure(tlen)
         plt.show()
