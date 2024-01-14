@@ -7,20 +7,24 @@ import sqlite3
 import datetime
 import matplotlib.pyplot as plt
 from hitcounter import HitCounter
-bar_index = 0
 
 
 class Formatter:
-    def __init__(self, ax, tick_len=None):
+    def __init__(self, ax, bar_bounds, tick_len=None):
         self.tick_len = tick_len if tick_len else 20  # mins
         self.ax = ax
+        self.bar_bounds = bar_bounds
 
     def format_coord(self, x, y):
         """Convert X to HH:MM"""
-        global bar_index
-        x2 = bar_index if bar_index else 0
-        hour, minute = divmod(int(x2) * self.tick_len, 60)
-        return f'x={x:.2f} x2={x2:.2f} ({hour:02d}:{minute:02d})'
+
+        msg = ''
+        for index, (start, end) in enumerate(self.bar_bounds):
+            if (start <= x) and (x < end):
+                x2 = index
+                hour, minute = divmod(int(x2) * self.tick_len, 60)
+                msg = f'x={x:.2f} x2={x2:.2f} ({hour:02d}:{minute:02d})'
+        return msg
 
 
 parser = argparse.ArgumentParser(
@@ -59,21 +63,13 @@ if __name__ == '__main__':
         x, y = zip(*[(tick_no, hum_hits)
                      for tick_no, hum_hits in hit_cnt.hits.items()])
         fig, ax = plt.subplots()
-        bars = ax.bar(x, y, color='blue', alpha=0.7)
-
-        def hover(event):
-            global bar_index
-            bar_index = None
-            for bar in bars:
-                contains, _ = bar.contains(event)
-                if contains:
-                    bar_index = bars.index(bar)
-                    # print(f'Hovered over Bar {bar_index + 1}')
-
-        formatter = Formatter(ax, tick_len=args.tick_len)
+        bars = ax.bar(x, y, align='center', color='blue', alpha=0.7)
+        bar_bounds = [(bar.get_x(), bar.get_x() + bar.get_width())
+                      for bar in bars]
+        formatter = Formatter(ax, bar_bounds, tick_len=args.tick_len)
         ax.format_coord = formatter.format_coord
         plt.xlabel(f'{args.tick_len} min interval')
         plt.ylabel('Pees')
         plt.title(f'{args.date} ({len(x)})')
-        fig.canvas.mpl_connect('motion_notify_event', hover)
+        # fig.canvas.mpl_connect('motion_notify_event', hover)
         plt.show()
