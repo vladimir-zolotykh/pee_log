@@ -70,10 +70,12 @@ if __name__ == '__main__':
                           for bar in bars]
             formatter = Formatter(ax, bar_bounds, tick_len=tlen)
             ax.format_coord = formatter.format_coord
-            ax.set_title(f'{args.date} ({len(x)} intervals)')
+            ax.set_title(f'{len(x)} intervals')
             ax.set_xlabel(f'{tlen} mins interval')
             ax.set_ylabel('Number of Logs')
 
         for tlen in args.tick_len:
             make_figure(tlen)
+            manager = plt.get_current_fig_manager()
+            manager.set_window_title(f'{args.date}')
         plt.show()
