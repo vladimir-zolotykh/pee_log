@@ -52,7 +52,7 @@ if __name__ == '__main__':
                         ''', (pee_time, ))
                     except sqlite3.IntegrityError as e:
                         if err_no < 1:  # print only one error
-                            print(f'{line_no}: {e}')
+                            print(f'{line_no}: {pee_time}: {e}')
                             err_no += 1
                         if args.ignore_duplicates:
                             pass
