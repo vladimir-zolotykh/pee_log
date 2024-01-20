@@ -1,6 +1,13 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 # PYTHON_ARGCOMPLETE_OK
+"""
+>>> con = connect_pee()
+>>> pee_log_16 = '''*** 01/16 ***\\n40\\n300\\n'''
+>>> insert_pee(con, *pee_log_16.split('\\n'))
+>>> select_pee(con)
+[('2023-01-16 04:00:00',), ('2023-01-16 15:00:00',)]
+"""
 import datetime
 import sqlite3
 import parse_date
@@ -68,3 +75,8 @@ def select_pee(con):
 def close_pee(con):
     con.commit()
     con.close()
+
+
+if __name__ == '__main__':
+    import doctest
+    doctest.testmod()
