@@ -3,10 +3,17 @@
 # PYTHON_ARGCOMPLETE_OK
 """
 >>> con = connect_pee()
->>> pee_log_16 = '''*** 01/16 ***\\n40\\n300\\n'''
->>> insert_pee(con, *pee_log_16.split('\\n'))
+>>> pee_log_14 = '''*** 2024/01/14 ***\\n1708\\n1847\\n'''
+>>> insert_pee(con, *pee_log_14.split('\\n'))
 >>> select_pee(con)
-[('2023-01-16 04:00:00',), ('2023-01-16 15:00:00',)]
+[('2024-01-14 17:08:00',), ('2024-01-14 18:47:00',)]
+>>> con.close()
+>>> con = connect_pee()
+>>> # Check that crossing the midday is noticed
+>>> pee_log_15 = '*** 2024/01/15 ***\\n1256\\n120\\n'
+>>> insert_pee(con, *pee_log_15.split('\\n'))
+>>> select_pee(con)
+[('2024-01-15 12:56:00',), ('2024-01-15 13:20:00',)]
 """
 import datetime
 import sqlite3
