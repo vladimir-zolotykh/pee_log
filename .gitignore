@@ -1,4 +1,5 @@
 pee_log.db
+log_db.db
 *.txt~
 *.py~
 __pycache__/
