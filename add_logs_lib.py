@@ -14,6 +14,13 @@
 >>> insert_pee(con, *pee_log_15.split('\\n'))
 >>> select_pee(con)
 [('2024-01-15 12:56:00',), ('2024-01-15 13:20:00',)]
+>>> con.close()
+>>> con = connect_pee()
+>>> # Check times aroung midnight
+>>> pee_log_16 = '*** 2024/01/16 ***\\n1200\\n1250\\n110\\n'
+>>> insert_pee(con, *pee_log_16.split('\\n'))
+>>> select_pee(con)
+[('2024-01-16 12:00:00',), ('2024-01-16 12:50:00',), ('2024-01-16 01:10:00',)]
 """
 import datetime
 import sqlite3
