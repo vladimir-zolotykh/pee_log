@@ -4,6 +4,12 @@
 import sys
 import argparse
 import xml.etree.ElementTree as ET
+import os
+from datetime import datetime
+
+
+def get_file_year(file_name):
+    return datetime.fromtimestamp(os.stat(file_name).st_ctime).year
 
 
 def convert_to_xml(input_file, output_file=None):
