@@ -7,17 +7,28 @@ import re
 def parse_log_re(input_string):
     """
     Parse log (all timestamps of one day) file
+
+    Example:
+    >>> input_string = '''24/01/23
+    ... 0232
+    ... 0840
+    ... 1044 224
+    ... 1132 308
+    ... 1725'''
+    >>> parse_input(input_string)
+    [('24/01/23', ['1044 224', '1132 308', '1725'])]
+
     """
 
-    full_pattern = re.compile(r'^(\d{2}/\d{2}/\d{2})\s*(.*)$',
-                              re.DOTALL | re.MULTILINE)
-    second_pattern = re.compile(r'^\d{4}(?:[ \t]\d+)?$', re.MULTILINE)
-    matches = full_pattern.finditer(input_string)
+    full_log_re = re.compile(r'^(\d{2}/\d{2}/\d{2})\s*(.*)$',
+                             re.DOTALL | re.MULTILINE)
+    timestamp_re = re.compile(r'^\d{4}(?:[ \t]\d+)?$', re.MULTILINE)
+    matches = full_log_re.finditer(input_string)
     result = []
     for match in matches:
-        date, rest_of_line = match.groups()
-        second_matches = second_pattern.findall(rest_of_line)
-        result.append((date, second_matches))
+        date, rest_of_log = match.groups()
+        timestamps = timestamp_re.findall(rest_of_log)
+        result.append((date, timestamps))
     return result
 
 
