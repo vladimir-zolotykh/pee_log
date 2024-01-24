@@ -16,7 +16,7 @@
 import re
 
 
-def parse_log_re(input_string):
+def parse_log_re(log_str):
     """
     Parse log (all timestamps of one day) file
 
@@ -35,7 +35,7 @@ def parse_log_re(input_string):
     full_log_re = re.compile(r'^(\d{2}/\d{2}/\d{2})\s*(.*)$',
                              re.DOTALL | re.MULTILINE)
     timestamp_re = re.compile(r'^\d{4}(?:[ \t]\d+)?$', re.MULTILINE)
-    matches = full_log_re.finditer(input_string)
+    matches = full_log_re.finditer(log_str)
     result = []
     for match in matches:
         date, rest_of_log = match.groups()
