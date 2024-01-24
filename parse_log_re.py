@@ -1,6 +1,18 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 # PYTHON_ARGCOMPLETE_OK
+"""
+>>> input_string = '''
+... 24/01/23
+... 0232
+... 0840
+... 1044 224
+... 1132 308
+... 1725
+... 1840'''
+>>> parse_log_re(input_string)
+[('24/01/23', ['0232', '0840', '1044 224', '1132 308', '1725', '1840'])]
+"""
 import re
 
 
@@ -15,8 +27,8 @@ def parse_log_re(input_string):
     ... 1044 224
     ... 1132 308
     ... 1725'''
-    >>> parse_input(input_string)
-    [('24/01/23', ['1044 224', '1132 308', '1725'])]
+    >>> parse_log_re(input_string)
+    [('24/01/23', ['0232', '0840', '1044 224', '1132 308', '1725'])]
 
     """
 
@@ -32,15 +44,6 @@ def parse_log_re(input_string):
     return result
 
 
-# Example usage
-input_string = """
-24/01/23
-0232
-0840
-1044 224
-1132 308
-1725
-1840"""
-
-result = parse_log_re(input_string)
-print(result)
+if __name__ == '__main__':
+    import doctest
+    doctest.testmod()
