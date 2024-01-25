@@ -2,19 +2,13 @@
 # -*- coding: utf-8 -*-
 # PYTHON_ARGCOMPLETE_OK
 """
->>> input_string = '''
-... 24/01/23
-... 0232
-... 0840
-... 1044 224
-... 1132 308
-... 1725
-... 1840'''
+>>> input_string = '24/01/23\\n0232\\n0840\\n1044 224\\n1132 308\\n1725\\n1840'
 >>> parse_log_re(input_string)
 [('24/01/23', ['0232', '0840', '1044 224', '1132 308', '1725', '1840'])]
 """
 import re
 import datetime
+
 
 def parse_log_re(log_str):
     """
@@ -26,9 +20,10 @@ def parse_log_re(log_str):
     ... 0840
     ... 1044 224
     ... 1132 308
-    ... 1725'''
+    ... 1725
+    ... 1840'''
     >>> parse_log_re(input_string)
-    [('24/01/23', ['0232', '0840', '1044 224', '1132 308', '1725'])]
+    [('24/01/23', ['0232', '0840', '1044 224', '1132 308', '1725', '1840'])]
 
     """
 
@@ -45,13 +40,25 @@ def parse_log_re(log_str):
 
 
 def log_to_timestamps(date_str, *time_vol_list):
+    """
+
+    Example:
+    >>> input_string = '24/01/23\\n0232\\n0840\\n1044 224\\n1132 308\\n1725\\n1840'
+    >>> parse_res = parse_log_re(input_string)
+    >>> parse_res
+    [('24/01/23', ['0232', '0840', '1044 224', '1132 308', '1725', '1840'])]
+    >>> log_to_timestamps(parse_res[0][0], *parse_res[0][1])
+    [(datetime.datetime(2024, 1, 23, 2, 32), ''), (datetime.datetime(2024, 1, 23, 8, 40), ''), (datetime.datetime(2024, 1, 23, 10, 44), 224), (datetime.datetime(2024, 1, 23, 11, 32), 308), (datetime.datetime(2024, 1, 23, 17, 25), ''), (datetime.datetime(2024, 1, 23, 18, 40), '')]
+    >>> 
+    """
+
     date = datetime.datetime.strptime(date_str, '%y/%m/%d')
     result = []
     for time_vol in time_vol_list:
         time_str, vol_str = (time_vol.split(maxsplit=1)
                              if len(time_vol.split()) > 1 else (time_vol, ''))
-        time = datetime.strptime(time_str, '%H%M')
-        timestamp = datetime.combine(date.date(), time.time())
+        time = datetime.datetime.strptime(time_str, '%H%M')
+        timestamp = datetime.datetime.combine(date.date(), time.time())
         result.append((timestamp, int(vol_str) if vol_str else ''))
     return result
 
