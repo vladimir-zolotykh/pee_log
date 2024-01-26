@@ -1,5 +1,6 @@
 pee_log.db
 log_db.db
+pee_diary.db
 LOG_XML/
 *.txt~
 *.py~
