@@ -4,7 +4,7 @@
 """
 Add records to pee_diary.db database
 
-Reads all logs for one day given at the command line. Duplicated
+Read all logs for one day given at the command line. Duplicated
 records are silently overwritten.
 """
 import argparse
