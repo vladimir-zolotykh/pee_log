@@ -22,9 +22,9 @@ class ConnectionDiary(sqlite3.Connection):
         self.execute('''
             CREATE TABLE IF NOT EXISTS pee_log (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
-            pee_time TEXT,
-            volume INT DEFAULT 0,
-            note TEXT DEFAULT '')
+                pee_time TEXT,
+                volume INT DEFAULT 0,
+                note TEXT DEFAULT '')
         ''')
 
     def insert_log(self, pee_time, volume=None, note=''):
