@@ -28,9 +28,14 @@ parser.add_argument('--log-db', default='./pee_diary.db',
 parser.add_argument('--verbose', '-v', action='count', default=0)
 
 
-if __name__ == '__main__':
-    argcomplete.autocomplete(parser)
-    args = parser.parse_args()
+def print_diary(log_db=None):
+    log_db = "./pee_diary.db" if log_db is None else log_db
     with sqlite3.connect(args.log_db, factory=ConnectionDiary) as conn:
         for row in conn.select_logs():
             print(row)
+
+
+if __name__ == '__main__':
+    argcomplete.autocomplete(parser)
+    args = parser.parse_args()
+    print_diary(args.log_db)
