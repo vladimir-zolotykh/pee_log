@@ -46,16 +46,20 @@ parser.add_argument('--log-db', default='./pee_diary.db',
 parser.add_argument('--verbose', '-v', action='count', default=0)
 
 
+def add_diary(log_file):
+    with open(log_file) as fd:
+        with sqlite3.connect(args.log_db, factory=ConnectionDiary) as conn:
+            log_str = fd.read()
+            parse_res = parse_log_re.parse_log_re(log_str)
+            entries = parse_res[0][1]
+            for timestamp, rest in parse_log_re.log_to_timestamps(
+                    parse_res[0][0], *entries):
+                vol = rest.pop(0)
+                note = rest[0] if rest else ''
+                conn.insert_log(timestamp, vol, note)
+
+
 if __name__ == '__main__':
     argcomplete.autocomplete(parser)
     args = parser.parse_args()
-    with open(args.log_file) as log_file:
-        with sqlite3.connect(args.log_db, factory=ConnectionDiary) as conn:
-            log_str = log_file.read()
-            parse_res = parse_log_re.parse_log_re(log_str)
-            for ts_vol_note in parse_log_re.log_to_timestamps(
-                    parse_res[0][0], *parse_res[0][1]):
-                ts = ts_vol_note[0]
-                vol = ts_vol_note[1]
-                note = ts_vol_note[2] if 2 < len(ts_vol_note) else ''
-                conn.insert_log(ts, vol, note)
+    add_diary(args.log_file)
