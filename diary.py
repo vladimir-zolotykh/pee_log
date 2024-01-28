@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 # PYTHON_ARGCOMPLETE_OK
 """
-Calls print_diary() or add_logs()
+Manage pee logs
 """
 import argparse
 import argcomplete
@@ -10,6 +10,7 @@ import sqlite3                  # noqa
 import parse_log_re             # noqa
 import add_logs
 import print_diary
+import test_log
 
 
 parser = argparse.ArgumentParser(
@@ -20,8 +21,10 @@ parser.add_argument('--log-db', default='./pee_diary.db',
 parser.add_argument('--verbose', '-v', action='count', default=0)
 subparsers = parser.add_subparsers(dest='command', required=True,
                                    help='Choose a command')
-parser_add = subparsers.add_parser('add', help="LOG_FILE Add new logs")
+parser_add = subparsers.add_parser('add', help="Add new logs")
 parser_add.add_argument("log_file", help="Path to the log file", type=str)
+parser_test = subparsers.add_parser('test', help="Check the log file")
+parser_test.add_argument("log_file", help="Path to the log file", type=str)
 subparsers.add_parser("print", help="Print already added logs")
 
 if __name__ == '__main__':
@@ -29,5 +32,7 @@ if __name__ == '__main__':
     args = parser.parse_args()
     if args.command == "print":
         print_diary.print_diary(args.log_db)
+    elif args.command == "test":
+        test_log.test_log(args.log_file)
     else:
         add_logs.add_logs(args.log_file)
