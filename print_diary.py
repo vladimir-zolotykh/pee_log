@@ -30,7 +30,7 @@ parser.add_argument('--verbose', '-v', action='count', default=0)
 
 def print_diary(log_db=None):
     log_db = "./pee_diary.db" if log_db is None else log_db
-    with sqlite3.connect(args.log_db, factory=ConnectionDiary) as conn:
+    with sqlite3.connect(log_db, factory=ConnectionDiary) as conn:
         for row in conn.select_logs():
             print(row)
 
