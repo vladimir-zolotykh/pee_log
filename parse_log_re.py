@@ -29,12 +29,13 @@ def parse_log_re(log_str):
 
     full_log_re = re.compile(r'^(\d{2}/\d{2}/\d{2})\s*(.*)$',
                              re.DOTALL | re.MULTILINE)
-    timestamp_re = re.compile(r'^\d{4}(?:[ \t]\d+)?$', re.MULTILINE)
+    timestamp_re = re.compile(r'^\d{4}(?:[ \t]\d+)?(?:[ \t]\w+)?$',
+                              re.MULTILINE)
     matches = full_log_re.finditer(log_str)
     result = []
     for match in matches:
-        date, rest_of_log = match.groups()
-        timestamps = timestamp_re.findall(rest_of_log)
+        date, rest = match.groups()
+        timestamps = timestamp_re.findall(rest)
         result.append((date, timestamps))
     return result
 
