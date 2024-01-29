@@ -5,14 +5,11 @@
 Read one day log records.
 The file format:
 YY/MM/DD
-HHMM
-HHMM
+HHMM [VOLUME] [NOTE]
 ...
 
 Example usage:
-$ python test_log.py LOG_DIARY/240124.txt
-LOG_DIARY/240124.txt                    : 23
-parse_log_re                            : 23
+$ for f in LOG_DIARY/*.txt; do diary.py test $f; done
 """
 import argparse
 import argcomplete
@@ -22,11 +19,13 @@ import parse_log_re
 def test_log(input_file):
     with open(input_file) as fd:
         log_str = fd.read()
-        lines = log_str.count('\n')
+        num_lines = log_str.count('\n')
         parse_res = parse_log_re.parse_log_re(log_str)
-    # print(f'{input_file:40s}: {lines:2d}\n'
-    #       f'{"parse_log_re":40s}: {1 + len(parse_res[0][1]):2d}')
-    assert lines == 1 + len(parse_res[0][1])
+    if num_lines == 1 + len(parse_res[0][1]):
+        print(f'{input_file} looks Ok')
+    else:
+        print(f'{input_file:40s}: {num_lines:2d}\n'
+              f'{"parse_log_re":40s}: {1 + len(parse_res[0][1]):2d}')
 
 
 parser = argparse.ArgumentParser(
