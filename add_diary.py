@@ -37,18 +37,19 @@ class ConnectionDiary(sqlite3.Connection):
             print(f"SQLite IntegrityError: {e}")
 
 
+LOG_DB_DEFAULT = "./pee_diary.db"
 parser = argparse.ArgumentParser(
     description="Add one day logs to the DB",
     formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 parser.add_argument('log_file')
-parser.add_argument('--log-db', default='./pee_diary.db',
+parser.add_argument('--log-db', default=LOG_DB_DEFAULT,
                     help='Log database file')
 parser.add_argument('--verbose', '-v', action='count', default=0)
 
 
-def add_diary(log_file):
+def add_diary(log_file, log_db=None):
     with open(log_file) as fd:
-        with sqlite3.connect(args.log_db, factory=ConnectionDiary) as conn:
+        with sqlite3.connect(log_db, factory=ConnectionDiary) as conn:
             log_str = fd.read()
             parse_res = parse_log_re.parse_log_re(log_str)
             entries = parse_res[0][1]
@@ -62,4 +63,4 @@ def add_diary(log_file):
 if __name__ == '__main__':
     argcomplete.autocomplete(parser)
     args = parser.parse_args()
-    add_diary(args.log_file)
+    add_diary(args.log_file, log_db=args.log_db)

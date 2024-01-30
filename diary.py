@@ -8,15 +8,15 @@ import argparse
 import argcomplete
 import sqlite3                  # noqa
 import parse_log_re             # noqa
-import add_logs
+import add_diary
 import print_diary
 import test_log
 
-
+LOG_DB_DEFAULT = "./pee_diary.db"
 parser = argparse.ArgumentParser(
     description="Manage pee logs",
     formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-parser.add_argument('--log-db', default='./pee_diary.db',
+parser.add_argument('--log-db', default=LOG_DB_DEFAULT,
                     help='Log database file')
 parser.add_argument('--verbose', '-v', action='count', default=0)
 subparsers = parser.add_subparsers(dest='command', required=True,
@@ -35,4 +35,4 @@ if __name__ == '__main__':
     elif args.command == "test":
         test_log.test_log(args.log_file)
     else:
-        add_logs.add_logs(args.log_file)
+        add_diary.add_diary(args.log_file, log_db=args.log_db)
