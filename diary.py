@@ -25,13 +25,15 @@ parser_add = subparsers.add_parser('add', help="Add new logs")
 parser_add.add_argument("log_file", help="Path to the log file", type=str)
 parser_test = subparsers.add_parser('test', help="Check the log file")
 parser_test.add_argument("log_file", help="Path to the log file", type=str)
-subparsers.add_parser("print", help="Print already added logs")
+parser_print = subparsers.add_parser("print", help="Print already added logs")
+parser_print.add_argument(
+    "req_date", help="Print the date logs", type=print_diary.date_type)
 
 if __name__ == '__main__':
     argcomplete.autocomplete(parser)
     args = parser.parse_args()
     if args.command == "print":
-        print_diary.print_diary(args.log_db)
+        print_diary.print_diary(args.req_date, args.log_db)
     elif args.command == "test":
         test_log.test_log(args.log_file)
     else:

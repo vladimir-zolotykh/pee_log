@@ -7,17 +7,19 @@ Print records from pee_diary.db database
 import argparse
 import argcomplete
 import sqlite3
+import datetime
 
 
 class ConnectionDiary(sqlite3.Connection):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-    def select_logs(self):
+    def select_logs(self, req_date):
         return self.execute('''
             SELECT pee_time, volume, note
             FROM pee_log
-        ''')
+            WHERE strftime('%Y-%m-%d', pee_time) = ?
+        ''', (datetime.datetime.strftime(req_date, '%Y-%m-%d'), ))
 
 
 parser = argparse.ArgumentParser(
@@ -28,10 +30,14 @@ parser.add_argument('--log-db', default='./pee_diary.db',
 parser.add_argument('--verbose', '-v', action='count', default=0)
 
 
-def print_diary(log_db=None):
+def date_type(date_str):
+    return datetime.datetime.strptime(date_str, '%Y-%m-%d')
+
+
+def print_diary(req_date, log_db=None):
     log_db = "./pee_diary.db" if log_db is None else log_db
     with sqlite3.connect(log_db, factory=ConnectionDiary) as conn:
-        for row in conn.select_logs():
+        for row in conn.select_logs(req_date):
             print(row)
 
 
