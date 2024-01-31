@@ -40,6 +40,28 @@ def parse_log_re(log_str):
     return result
 
 
+def get_vol_note(vol_str):
+    """
+    Parse <VOL NOTE> string
+
+    >>> get_vol_note("234")
+    (234, '')
+    >>> get_vol_note("234 Creatine")
+    (234, 'Creatine')
+    >>> get_vol_note("Creatine")
+    (0, 'Creatine')
+    >>> get_vol_note("")
+    (0, '')
+    """
+    vol, note = 0, ''
+    for s in vol_str.split(maxsplit=1):
+        if s.isdecimal():
+            vol = int(s)
+        else:
+            note = s
+    return vol, note
+
+
 def log_to_timestamps(date_str, *time_vol_list):
     """
 
@@ -81,16 +103,6 @@ def log_to_timestamps(date_str, *time_vol_list):
                              if len(time_vol.split()) > 1 else (time_vol, ''))
         time = datetime.datetime.strptime(time_str, '%H%M')
         timestamp = datetime.datetime.combine(date.date(), time.time())
-
-        def get_vol_note(vol_str):
-            vol, note = 0, ''
-            for s in vol_str.split(maxsplit=1):
-                if s.isdecimal():
-                    vol = int(s)
-                else:
-                    note = s
-            return vol, note
-
         result.append((timestamp, get_vol_note(vol_str)))
     return result
 
