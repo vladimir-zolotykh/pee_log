@@ -30,9 +30,9 @@ class ConnectionDiary(sqlite3.Connection):
     def insert_log(self, pee_time, volume=None, note=''):
         try:
             self.execute('''
-                INSERT INTO pee_log (pee_time)
-                VALUES (?)
-            ''', (pee_time, ))
+                INSERT INTO pee_log (pee_time, volume, note)
+                VALUES (?, ?, ?)
+            ''', (pee_time, volume, note))
         except sqlite3.IntegrityError as e:
             print(f"SQLite IntegrityError: {e}")
 
@@ -48,15 +48,23 @@ parser.add_argument('--verbose', '-v', action='count', default=0)
 
 
 def add_diary(log_file, log_db=None):
+    """
+    Add entries from a log_file to sqlite3 database
+
+    Parameters:
+    - log_file: the path to the log file
+    - log_db: sqlite3 databse file
+    """
     with open(log_file) as fd:
         with sqlite3.connect(log_db, factory=ConnectionDiary) as conn:
             log_str = fd.read()
             parse_res = parse_log_re.parse_log_re(log_str)
+            # parse_res: [('24/01/24', ['0220', ..., '0822 473'...])]
             entries = parse_res[0][1]
-            for timestamp, rest in parse_log_re.log_to_timestamps(
+            # entries  : ['0220', ..., '0822 473'...]
+            for (timestamp, rest) in parse_log_re.log_to_timestamps(
                     parse_res[0][0], *entries):
-                vol = rest.pop(0)
-                note = rest[0] if rest else ''
+                vol, note = rest
                 conn.insert_log(timestamp, vol, note)
 
 

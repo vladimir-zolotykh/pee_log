@@ -21,13 +21,15 @@ parser.add_argument('--log-db', default=LOG_DB_DEFAULT,
 parser.add_argument('--verbose', '-v', action='count', default=0)
 subparsers = parser.add_subparsers(dest='command', required=True,
                                    help='Choose a command')
-parser_add = subparsers.add_parser('add', help="Add new logs")
+parser_add = subparsers.add_parser('add', help="Add logs")
 parser_add.add_argument("log_file", help="Path to the log file", type=str)
 parser_test = subparsers.add_parser('test', help="Check the log file")
 parser_test.add_argument("log_file", help="Path to the log file", type=str)
-parser_print = subparsers.add_parser("print", help="Print already added logs")
+parser_print = subparsers.add_parser("print", help="Print logs")
 parser_print.add_argument(
-    "req_date", help="Print the date logs", type=print_diary.date_type)
+    "--req-date", help="Print the date logs", type=print_diary.date_type)
+parser_delete = subparsers.add_parser("delete", help="Delete logs")
+
 
 if __name__ == '__main__':
     argcomplete.autocomplete(parser)
@@ -36,5 +38,7 @@ if __name__ == '__main__':
         print_diary.print_diary(args.req_date, args.log_db)
     elif args.command == "test":
         test_log.test_log(args.log_file)
+    elif args.command == "delete":
+        pass
     else:
         add_diary.add_diary(args.log_file, log_db=args.log_db)
