@@ -24,7 +24,17 @@ def parse_log_re(log_str):
     ... 1840'''
     >>> parse_log_re(input_string)
     [('24/01/23', ['0232', '0840', '1044 224', '1132 308', '1725', '1840'])]
-
+    >>> log24 = '''24/01/24
+    ... 0220
+    ... 0705 306
+    ... 0539'''
+    >>> parse_log_re(log24)
+    [('24/01/24', ['0220', '0705 306', '0539'])]
+    >>> parse_res = parse_log_re(log24)
+    >>> log_to_timestamps(parse_res[0][0], *parse_res[0][1])
+    [(datetime.datetime(2024, 1, 24, 2, 20), (0, '')),
+     (datetime.datetime(2024, 1, 24, 7, 5), (306, '')),
+     (datetime.datetime(2024, 1, 24, 5, 39), (0, ''))]
     """
 
     full_log_re = re.compile(r'^(\d{2}/\d{2}/\d{2})\s*(.*)$',
@@ -42,7 +52,9 @@ def parse_log_re(log_str):
 
 def get_vol_note(vol_str):
     """
-    Parse <VOL NOTE> string
+    Parse <VOL NOTE> string.
+
+    Return tuple with VOL and NOTE values
 
     >>> get_vol_note("234")
     (234, '')
@@ -64,6 +76,12 @@ def get_vol_note(vol_str):
 
 def log_to_timestamps(date_str, *time_vol_list):
     """
+    Parameters:
+    - date_str: e.g., '24/01/24'
+    - time_vol_list: ['0220', '0705 306', '0539']
+    Returns:
+    - [(datetime.datetime(2024, 1, 24, 2, 20), (0, ''), ...]
+
 
     Example:
     >>> input_string = '''24/01/23
