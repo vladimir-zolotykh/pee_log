@@ -29,16 +29,18 @@ parser_print = subparsers.add_parser("print", help="Print logs")
 parser_print.add_argument(
     "--req-date", help="Print the date logs", type=print_diary.date_type)
 parser_delete = subparsers.add_parser("delete", help="Delete logs")
-
+parser_delete.add_argument(
+    "--req-date", help="Delete all REQ_DATE logs from database",
+    type=print_diary.date_type)
 
 if __name__ == '__main__':
     argcomplete.autocomplete(parser)
     args = parser.parse_args()
-    if args.command == "print":
+    if args.command == "delete":
+        print_diary.delete_diary(args.req_date, args.log_db)
+    elif args.command == "print":
         print_diary.print_diary(args.req_date, args.log_db)
     elif args.command == "test":
         test_log.test_log(args.log_file)
-    elif args.command == "delete":
-        pass
     else:
         add_diary.add_diary(args.log_file, log_db=args.log_db)

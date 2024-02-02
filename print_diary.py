@@ -14,6 +14,20 @@ class ConnectionDiary(sqlite3.Connection):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
+    def delete_logs(self, req_date=None):
+        """Delete logs for REQ_DATE or all logs
+
+        if REQ_DATE is not set
+        """
+        query = '''
+            DELETE FROM pee_log
+            WHERE ? IS NULL OR strftime('%Y-%m-%d', pee_time) = ?
+        '''
+        self.execute(
+            query,
+            (req_date, datetime.strftime(req_date, '%Y-%m-%d') if req_date
+             else None))
+
     def select_logs(self, req_date=None):
         """
         Select logs from 'pee_log' table for requested date
@@ -48,6 +62,12 @@ parser.add_argument('--verbose', '-v', action='count', default=0)
 
 def date_type(date_str):
     return datetime.strptime(date_str, '%Y-%m-%d')
+
+
+def delete_diary(req_date=None, log_db=None):
+    log_db = "./pee_diary.db" if log_db is None else log_db
+    with sqlite3.connect(log_db, factory=ConnectionDiary) as conn:
+        conn.delete_logs(req_date)
 
 
 def print_diary(req_date=None, log_db=None):
