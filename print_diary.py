@@ -15,20 +15,27 @@ class ConnectionDiary(sqlite3.Connection):
         super().__init__(*args, **kwargs)
 
     def select_logs(self, req_date=None):
-        query_date = '''
+        """
+        Select logs from 'pee_log' table for requested date
+
+        Parameters:
+        - req_date: (datetime.date, optional): The requested date. If
+          provided, logs for that specific date will be selected
+          otherwise entire 'pee_log' table.
+
+        Returns:
+        - Cursor: cursor object with the selected logs.
+        """
+
+        query = '''
             SELECT pee_time, volume, note
             FROM pee_log
-            WHERE strftime('%Y-%m-%d', pee_time) = ?
+            WHERE ? IS NULL OR strftime('%Y-%m-%d', pee_time) = ?
         '''
-        query_all = '''
-            SELECT pee_time, volume, note
-            FROM pee_log
-        '''
-        if req_date:
-            return self.execute(
-                query_date, (datetime.strftime(req_date, '%Y-%m-%d'), ))
-        else:
-            return self.execute(query_all)
+        return self.execute(
+            query,
+            (req_date, datetime.strftime(req_date, '%Y-%m-%d') if req_date
+             else None))
 
 
 parser = argparse.ArgumentParser(
