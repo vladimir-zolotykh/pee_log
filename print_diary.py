@@ -17,7 +17,7 @@ class ConnectionDiary(sqlite3.Connection):
     def delete_logs(self, req_date=None):
         """Delete logs for REQ_DATE or all logs
 
-        if REQ_DATE is not set
+        if REQ_DATE is not set. REQ_DATE format is %Y-%m-%d
         """
         query = '''
             DELETE FROM pee_log

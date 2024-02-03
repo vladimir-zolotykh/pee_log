@@ -11,6 +11,7 @@ import parse_log_re             # noqa
 import add_diary
 import print_diary
 import test_log
+from smart_log_name import smart_log_name
 
 LOG_DB_DEFAULT = "./pee_diary.db"
 parser = argparse.ArgumentParser(
@@ -27,10 +28,11 @@ parser_test = subparsers.add_parser('test', help="Check the log file")
 parser_test.add_argument("log_file", help="Path to the log file", type=str)
 parser_print = subparsers.add_parser("print", help="Print logs")
 parser_print.add_argument(
-    "--req-date", help="Print the date logs", type=print_diary.date_type)
+    "--req-date", help="Print logs for %Y-%m-%d or all",
+    type=print_diary.date_type)
 parser_delete = subparsers.add_parser("delete", help="Delete logs")
 parser_delete.add_argument(
-    "--req-date", help="Delete all REQ_DATE logs from database",
+    "--req-date", help="Delete logs for %Y-%m-%d or all",
     type=print_diary.date_type)
 
 if __name__ == '__main__':
@@ -43,4 +45,5 @@ if __name__ == '__main__':
     elif args.command == "test":
         test_log.test_log(args.log_file)
     else:
-        add_diary.add_diary(args.log_file, log_db=args.log_db)
+        add_diary.add_diary(smart_log_name(args.log_file),
+                            log_db=args.log_db)
