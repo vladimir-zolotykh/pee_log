@@ -5,3 +5,5 @@ LOG_XML/
 *.txt~
 *.py~
 __pycache__/
+.emacs.desktop
+.emacs.desktop.lock
