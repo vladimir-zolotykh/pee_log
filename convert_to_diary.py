@@ -30,13 +30,8 @@ def convert_to_24h(time_strs):
             t1 = t2
 
     def convert_to_12h(time_strs, midday_index):
-        # [t + ("AM" if i < midday_index else "PM")
-        #  for i, t in enumerate(time_strs)]
-
-        res = []
-        for i, t in enumerate(time_strs):
-            res.append(t + ("AM" if i < midday_index else "PM"))
-        return res
+        return [t + ("AM" if i < midday_index else "PM")
+                for i, t in enumerate(time_strs)]
 
     time_strs = add_leading0(time_strs)
     mdi = find_midday_index(time_strs)
