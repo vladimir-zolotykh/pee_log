@@ -16,8 +16,7 @@ Parse multilog file, e.g., file with many log records like
 """
 import re
 
-pee_sample = """
-*** 12/26 ***
+pee_sample = """*** 12/26 ***
 0205
 0409
 *** 01/09 ***
@@ -27,15 +26,14 @@ pee_sample = """
 *** 01/14 ***
 0407
 0726
-0921
-"""
-time_re = re.compile(r'(:?\d{4}.?)')
+0921"""
 
+time_re = re.compile(r'(:?\d{4}.?)')
 log_re = re.compile(
     r'\*{3} (\d{2}/\d{2} \*{3}).' + time_re.pattern + r'+',
     re.DOTALL | re.MULTILINE)
 date_times_re = re.compile(
-    r'\*{3} (?P<date>\d{2}/\d{2}) \*{3}.(?P<times>.+).',
+    r'\*{3} (?P<date>\d{2}/\d{2}) \*{3}.(?P<times>.+)',
     re.DOTALL | re.MULTILINE)
 
 
