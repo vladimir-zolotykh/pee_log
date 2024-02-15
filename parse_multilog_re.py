@@ -49,6 +49,81 @@ def parse_multilog(log_str):
     return result
 
 
+# date_re example "01/27"
+date_re = re.compile(r'''
+    \*{3}\s+
+    (?:(?P<year>\d{2,4})[/-])?  # 2024 or 24
+    (?P<month>\d{2})[/-]
+    (?P<date>\d{2})
+    \s+\*{3}
+''', re.VERBOSE)
+# log_re example "1234 121 Creatine"
+log_re = re.compile(r'''
+    ((?P<time>\d{3,4})          # 0214 or 214 (2:14 AM)
+    (?:\s+(?P<volume>\d+))?
+    (?:\s+(?P<note>\w+))?)
+    |(?P<label>\w+)             # standalone label, e.g., "stool"
+''', re.VERBOSE)
+
+
+class LogState:
+    EVENTS = ('date', 'log', 'eof')
+    STATES = {
+        'idle': {'date': 'collect', 'eof': 'idle'},
+        'collect': {'log': 'collect', 'date': 'write', 'eof': 'write'},
+        'write': {'date': 'collect', 'eof': 'terminate'},
+        'terminate': None}
+
+    def __init__(self, init_state='idle'):
+        self.state = init_state
+
+    def transition(self, event):
+        if event in self.EVENTS:
+            new_state = self.STATES[self.state][event]
+            if new_state == self.state:
+                return
+            self.state = new_state
+
+
+def convert_to_diary(log_file):
+    log_state = LogState()
+    log_data = []               # collected logs (tuples)
+    log_date = None
+
+    def set_date(*args):
+        print(f'*** set_date {args = }')
+
+    def save_log(data):
+        print(f'*** save_log {data = }')
+
+    def clear_log():
+        nonlocal log_data, log_date
+        log_data = []
+        log_date = None
+
+    with open(log_file) as log_fd:
+        for line_no, line_str in enumerate(log_fd.readlines(), start=1):
+            date_match = date_re.match(line_str)
+            if date_match:
+                if log_state.state == 'collect':
+                    save_log(log_data)
+                    clear_log()
+                    log_state.transition('idle')
+                else:
+                    log_state.transition('collect')
+                    set_date(date_match.groups())
+                continue
+            log_match = log_re.match(line_str)
+            if log_match:
+                log_data.append((log_date, *log_match.groups()))
+                continue
+        if log_data:
+            save_log(log_data)
+            clear_log()
+            log_state.transition('idle')
+
+
 if __name__ == '__main__':
-    import doctest
-    doctest.testmod(optionflags=doctest.NORMALIZE_WHITESPACE)
+    # import doctest
+    # doctest.testmod(optionflags=doctest.NORMALIZE_WHITESPACE)
+    convert_to_diary('pee_log.txt')
