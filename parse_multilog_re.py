@@ -17,7 +17,7 @@ Parse multilog file, e.g., file with many log records like
 import re
 import argparse
 import argcomplete
-import operator
+from datetime import datetime
 
 pee_sample = """*** 12/26 ***
 0205
@@ -79,7 +79,7 @@ class LogState:
         'idle_state': {
             'date_event': 'collect_state'},
         'collect_state': {
-            'date_event': 'idle_state', 'log_event': 'collect_state'}}
+            'date_event': 'collect_state', 'log_event': 'collect_state'}}
 
     def __init__(self, init_state='idle_state'):
         assert init_state in self.STATES
@@ -87,7 +87,11 @@ class LogState:
 
     def transition(self, event):
         assert event in self.EVENTS
-        new_state = self.STATES[self.state][event]
+        try:
+            new_state = self.STATES[self.state][event]
+        except KeyError as e:
+            print(f'*** transition {self.state = }, {event = }, {e = }')
+            raise
         if new_state == self.state:
             return
         self.state = new_state
@@ -96,7 +100,7 @@ class LogState:
 def convert_to_diary(log_file):
     log_state = LogState()
     log_data = []               # collected logs (tuples)
-    log_date = None
+    log_day = None
 
     def set_date(*args):
         print(f'*** set_date {args = }')
@@ -105,23 +109,28 @@ def convert_to_diary(log_file):
         print(f'*** save_log {data = }')
 
     def clear_log():
-        nonlocal log_data, log_date
+        nonlocal log_data, log_day
         log_data = []
-        log_date = None
+        log_day = None
 
     with open(log_file) as log_fd:
+        year = datetime.now().year
         for line_no, line_str in enumerate(log_fd.readlines(), start=1):
             date_match = date_re.match(line_str)
             log_match = log_re.match(line_str)
             if date_match:
+                year, month, day = date_match.groups()
+                if not year:
+                    year = datetime.now().year
+                log_day = datetime(*map(int, (year, month, day)))
                 if log_state.state == 'collect_state':
                     save_log(log_data)
                     clear_log()
                 elif log_state.state == 'idle':
                     set_date(date_match.groups())
-                log_state.transition('date_event')
+                log_state.transition('date_event')  # -> 'collect_state'
             elif log_match:
-                log_data.append((log_date, *log_match.groups()))
+                log_data.append((log_day, *log_match.groups()))
                 log_state.transition('log_event')
         if log_data:
             save_log(log_data)
@@ -152,4 +161,4 @@ if __name__ == '__main__':
         if args.pdb:
             import pdb
             pdb.set_trace()
-        convert_to_diary('pee_log.txt')
+        convert_to_diary(args.log_files[0])
