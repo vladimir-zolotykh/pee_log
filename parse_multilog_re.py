@@ -126,8 +126,12 @@ def convert_to_diary(log_file):
                 if log_state.state == 'collect_state':
                     save_log(log_data)
                     clear_log()
-                elif log_state.state == 'idle':
-                    set_date(date_match.groups())
+                elif log_state.state == 'idle_state':
+                    year, month, day = date_match.groups()
+                    if not year:
+                        year = datetime.now().year
+                    log_day = datetime(*map(int, (year, month, day)))
+                    # set_date(date_match.groups())
                 log_state.transition('date_event')  # -> 'collect_state'
             elif log_match:
                 log_data.append((log_day, *log_match.groups()))
@@ -161,4 +165,4 @@ if __name__ == '__main__':
         if args.pdb:
             import pdb
             pdb.set_trace()
-        convert_to_diary(args.log_files[0])
+            convert_to_diary(args.log_files[0])
