@@ -15,6 +15,9 @@ Parse multilog file, e.g., file with many log records like
  ('01/14', '0407'), ('01/14', '0726'), ('01/14', '0921')]
 """
 import re
+import argparse
+import argcomplete
+import operator
 
 pee_sample = """*** 12/26 ***
 0205
@@ -66,23 +69,28 @@ log_re = re.compile(r'''
 ''', re.VERBOSE)
 
 
-class LogState:
-    EVENTS = ('date', 'log', 'eof')
-    STATES = {
-        'idle': {'date': 'collect', 'eof': 'idle'},
-        'collect': {'log': 'collect', 'date': 'write', 'eof': 'write'},
-        'write': {'date': 'collect', 'eof': 'terminate'},
-        'terminate': None}
+class InvalidEventError(Exception):
+    pass
 
-    def __init__(self, init_state='idle'):
+
+class LogState:
+    EVENTS = ('date_event', 'log_event')
+    STATES = {
+        'idle_state': {
+            'date_event': 'collect_state'},
+        'collect_state': {
+            'date_event': 'idle_state', 'log_event': 'collect_state'}}
+
+    def __init__(self, init_state='idle_state'):
+        assert init_state in self.STATES
         self.state = init_state
 
     def transition(self, event):
-        if event in self.EVENTS:
-            new_state = self.STATES[self.state][event]
-            if new_state == self.state:
-                return
-            self.state = new_state
+        assert event in self.EVENTS
+        new_state = self.STATES[self.state][event]
+        if new_state == self.state:
+            return
+        self.state = new_state
 
 
 def convert_to_diary(log_file):
@@ -104,26 +112,44 @@ def convert_to_diary(log_file):
     with open(log_file) as log_fd:
         for line_no, line_str in enumerate(log_fd.readlines(), start=1):
             date_match = date_re.match(line_str)
+            log_match = log_re.match(line_str)
             if date_match:
-                if log_state.state == 'collect':
+                if log_state.state == 'collect_state':
                     save_log(log_data)
                     clear_log()
-                    log_state.transition('idle')
-                else:
-                    log_state.transition('collect')
+                elif log_state.state == 'idle':
                     set_date(date_match.groups())
-                continue
-            log_match = log_re.match(line_str)
-            if log_match:
+                log_state.transition('date_event')
+            elif log_match:
                 log_data.append((log_date, *log_match.groups()))
-                continue
+                log_state.transition('log_event')
         if log_data:
             save_log(log_data)
             clear_log()
-            log_state.transition('idle')
+
+
+parser = argparse.ArgumentParser(
+    description='''
+parse_multilog_re: run doctest, dbg, or parse log file(s)''',
+    formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+parser.add_argument(
+    '--pdb', help='Call pdb.set_trace() first', action='store_true')
+parser.add_argument(
+    '--testmod', help='''\
+Call doctest.testmod(), --pdb option and log files if supplied are ignored''',
+    action='store_true')
+parser.add_argument(
+    'log_files', help='Log files to parse', nargs='*')
 
 
 if __name__ == '__main__':
-    # import doctest
-    # doctest.testmod(optionflags=doctest.NORMALIZE_WHITESPACE)
-    convert_to_diary('pee_log.txt')
+    argcomplete.autocomplete(parser)
+    args = parser.parse_args()
+    if args.testmod:
+        import doctest
+        doctest.testmod(optionflags=doctest.NORMALIZE_WHITESPACE)
+    else:
+        if args.pdb:
+            import pdb
+            pdb.set_trace()
+        convert_to_diary('pee_log.txt')
