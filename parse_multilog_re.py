@@ -18,6 +18,7 @@ import re
 import argparse
 import argcomplete
 from datetime import datetime
+from typing import NamedTuple, Optional
 
 pee_sample = """*** 12/26 ***
 0205
@@ -67,6 +68,13 @@ log_re = re.compile(r'''
     (?:\s+(?P<note>\w+))?)
     |(?P<label>\w+)             # standalone label, e.g., "stool"
 ''', re.VERBOSE)
+
+
+class LogEntry(NamedTuple):
+    time: Optional[datetime.time] = None
+    volume: Optional[int] = None
+    note: Optional[str] = None
+    label: Optional[str] = None
 
 
 class InvalidEventError(Exception):
@@ -134,7 +142,11 @@ def convert_to_diary(log_file):
                 elif log_state.state == 'idle_state':
                     log_state.transition('date_event')  # -> 'collect_state'
             elif log_match:
-                log_data.append((log_day, *log_match.groups()))
+                time, *rest = log_match.groups()[1:]
+                if time:
+                    time = datetime.strptime(time, '%H%M')
+                log_entry = LogEntry(time, *rest)
+                log_data.append((log_day, log_entry))
                 # 'collect_state' remains active
             else:
                 raise InvalidEventError(line_str)
