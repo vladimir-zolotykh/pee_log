@@ -102,8 +102,14 @@ def convert_to_diary(log_file):
     log_data = []               # collected logs (tuples)
     log_day = None
 
-    def set_date(*args):
-        print(f'*** set_date {args = }')
+    # def set_date(*args):
+    #     print(f'*** set_date {args = }')
+
+    def get_log_day(date_match: re.Match) -> datetime.date:
+        year, month, day = date_match.groups()
+        if not year:
+            year = datetime.now().year
+        return datetime(*map(int, (year, month, day))).date()
 
     def save_log(data):
         print(f'*** save_log {data = }')
@@ -114,31 +120,27 @@ def convert_to_diary(log_file):
         log_day = None
 
     with open(log_file) as log_fd:
-        year = datetime.now().year
+        log_state = LogState(init_state='idle_state')
         for line_no, line_str in enumerate(log_fd.readlines(), start=1):
             date_match = date_re.match(line_str)
             log_match = log_re.match(line_str)
             if date_match:
-                year, month, day = date_match.groups()
-                if not year:
-                    year = datetime.now().year
-                log_day = datetime(*map(int, (year, month, day)))
+                # year, month, day = date_match.groups()
+                log_day = get_log_day(date_match)
                 if log_state.state == 'collect_state':
                     save_log(log_data)
-                    clear_log()
+                    log_data = []
+                    # 'collect_state' remains active
                 elif log_state.state == 'idle_state':
-                    year, month, day = date_match.groups()
-                    if not year:
-                        year = datetime.now().year
-                    log_day = datetime(*map(int, (year, month, day)))
-                    # set_date(date_match.groups())
-                log_state.transition('date_event')  # -> 'collect_state'
+                    log_state.transition('date_event')  # -> 'collect_state'
             elif log_match:
                 log_data.append((log_day, *log_match.groups()))
-                log_state.transition('log_event')
+                # 'collect_state' remains active
+            else:
+                raise InvalidEventError(line_str)
         if log_data:
             save_log(log_data)
-            clear_log()
+            log_data = []
 
 
 parser = argparse.ArgumentParser(
