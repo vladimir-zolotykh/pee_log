@@ -204,4 +204,5 @@ if __name__ == '__main__':
         if args.pdb:
             import pdb
             pdb.set_trace()
-        convert_to_diary(args.log_files[0])
+        for log_file in args.log_files:
+            convert_to_diary(log_file)
