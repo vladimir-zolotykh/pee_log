@@ -14,6 +14,7 @@ Parse multilog file, e.g., file with many log records like
  ('01/09', '0008'), ('01/09', '0158'), ('01/09', '0454'),\
  ('01/14', '0407'), ('01/14', '0726'), ('01/14', '0921')]
 """
+import os
 import re
 import argparse
 import argcomplete
@@ -76,6 +77,17 @@ class LogEntry(NamedTuple):
     note: Optional[str] = None
     label: Optional[str] = None
 
+    def __str__(self):
+        if self.label:
+            return str(self.label)
+        else:
+            s = datetime.strftime(self.time, '%H%M')
+            if self.volume:
+                s += ' ' + str(self.volume)
+            if self.note:
+                s += ' ' + str(self.note)
+        return s
+
 
 class InvalidEventError(Exception):
     pass
@@ -119,8 +131,21 @@ def convert_to_diary(log_file):
             year = datetime.now().year
         return datetime(*map(int, (year, month, day))).date()
 
-    def save_log(data):
-        print(f'*** save_log {data = }')
+    def save_log(data, log_day=None):
+        '''Write DATA to LOG_DIARY/YYYY-MM-DD.txt file'''
+
+        if log_day is None:
+            log_day = data[0][0]
+        file_name = '{:04d}-{:02d}-{:02d}'.format(
+            log_day.year, log_day.month, log_day.day)
+        print(f'{file_name = }')
+        log_file = os.path.join('LOG_DIARY', file_name + '.txt')
+        ans = input(f'Write to {log_file} [y/N]?')
+        if ans.upper() == 'Y':
+            with open(log_file, 'w') as fd:
+                print(file_name, file=fd)
+                for _, log_entry in data:
+                    print(str(log_entry), file=fd)
 
     def clear_log():
         nonlocal log_data, log_day
