@@ -32,7 +32,7 @@ def pushd(new_dir):
 # # Loop through each .txt file in the current directory
 # for file in *.txt; do
 #     # Execute the sed command for each file
-#     sed -i.bak 
+#     sed -i.bak
 #         '1s/\([0-9]\{2\}\)\/\([0-9]\{2\}\)\/\([0-9]\{2\}\)/20\1-\2-\3/'
 #          "$file"
 # done
