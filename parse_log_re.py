@@ -37,7 +37,9 @@ def parse_log_re(log_str):
      (datetime.datetime(2024, 1, 24, 5, 39), (0, ''))]
     """
 
-    full_log_re = re.compile(r'^(\d{2}/\d{2}/\d{2})\s*(.*)$',
+    # full_log_re = re.compile(r'^(\d{2}/\d{2}/\d{2})\s*(.*)$',
+    #                          re.DOTALL | re.MULTILINE)
+    full_log_re = re.compile(r'^(\d{4}-\d{2}-\d{2})\s*(.*)$',
                              re.DOTALL | re.MULTILINE)
     timestamp_re = re.compile(r'^\d{4}(?:[ \t]\d+)?(?:[ \t]\w+)?$',
                               re.MULTILINE)
