@@ -1,7 +1,18 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 # PYTHON_ARGCOMPLETE_OK
+# from dataclasses import dataclass
+from datetime import datetime
+from pydantic import BaseModel
 import tkinter as tk
+
+
+# @dataclass
+class LogRecord(BaseModel):
+    date: datetime = datetime.now()
+    label: str = 'pee'
+    volume: int = 0
+    note: str = ''
 
 
 class LogViewer(tk.Tk):
@@ -10,12 +21,14 @@ class LogViewer(tk.Tk):
         ('640', '2024-01-26 13:31:00', '581', ''),
         ('641', '2024-01-26 14:00:00', '706', '')
     ]
+    """
     fields = [
         'Date',
         'Label',
         'Volume',
         'Note',
     ]
+    """
 
     def __init__(self, *args, **kwargs):
         super().__init__()
@@ -28,7 +41,7 @@ class LogViewer(tk.Tk):
             log_list.insert(tk.END, line)
         form = tk.Frame(self)
         form.grid(column=1, row=0, sticky=tk.N)
-        for row, fld in enumerate(self.fields):
+        for row, fld in enumerate(LogRecord.__fields__):
             _ = tk.Label(form, text=fld)
             _.grid(column=0, row=row)
             _ = tk.Entry(form)
