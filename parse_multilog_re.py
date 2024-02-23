@@ -129,6 +129,9 @@ def convert_to_diary(log_file):
         year, month, day = date_match.groups()
         if not year:
             year = datetime.now().year
+        else:
+            if len(year) == 2:
+                year = '20' + year
         return datetime(*map(int, (year, month, day))).date()
 
     def save_log(data, log_day=None):
@@ -138,9 +141,10 @@ def convert_to_diary(log_file):
             log_day = data[0][0]
         file_name = '{:04d}-{:02d}-{:02d}'.format(
             log_day.year, log_day.month, log_day.day)
-        print(f'{file_name = }')
         log_file = os.path.join('LOG_DIARY', file_name + '.txt')
-        ans = input(f'Write to {log_file} [y/N]?')
+        if os.path.exists(log_file):
+            return
+        ans = input(f'Write to {log_file} [y/N]? ')
         if ans.upper() == 'Y':
             with open(log_file, 'w') as fd:
                 print(file_name, file=fd)
