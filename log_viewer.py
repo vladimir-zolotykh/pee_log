@@ -56,12 +56,12 @@ class LogViewer(tk.Tk):
         index = event.widget.curselection()
         if isinstance(index, tuple):
             index = index[0]
-        if index:
-            item = event.widget.get(index)
-            opt = {k: v.strip() for k, v in
-                   zip(LogRecord.__fields__, item.split('|'))}
-            rec = LogRecord(**opt)
-            print(f'{rec = }')
+        # if index:
+        item = event.widget.get(index)
+        opt = {k: v.strip() for k, v in
+               zip(LogRecord.__fields__, item.split('|'))}
+        rec = LogRecord(**opt)
+        print(f'{rec = }')
 
 
 if __name__ == '__main__':
