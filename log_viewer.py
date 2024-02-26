@@ -14,6 +14,7 @@ class LogRecord(BaseModel):
     volume: int = 0
     note: str = ''
 
+    @classmethod
     def from_list(cls, values):
         opt = {k: v.strip() for k, v in zip(cls.__fields__, values)}
         return cls(**opt)
@@ -41,8 +42,9 @@ class LogViewer(tk.Tk):
         log_list.bind('<<ListboxSelect>>', self.on_select)
         self.log_list = log_list
         for elem in self.log_list_test:
-            opt = {k: v for k, v in zip(LogRecord.__fields__, elem)}
-            rec = LogRecord(**opt)
+            # opt = {k: v for k, v in zip(LogRecord.__fields__, elem)}
+            # rec = LogRecord(**opt)
+            rec = LogRecord.from_list(elem)
             log_list.insert(tk.END, str(rec))
         form = tk.Frame(self)
         form.grid(column=1, row=0, sticky=tk.N)
@@ -58,9 +60,10 @@ class LogViewer(tk.Tk):
             index = index[0]
         # if index:
         item = event.widget.get(index)
-        opt = {k: v.strip() for k, v in
-               zip(LogRecord.__fields__, item.split('|'))}
-        rec = LogRecord(**opt)
+        # opt = {k: v.strip() for k, v in
+        #        zip(LogRecord.__fields__, item.split('|'))}
+        # rec = LogRecord(**opt)
+        rec = LogRecord.from_list(item.split('|'))
         print(f'{rec = }')
 
 
