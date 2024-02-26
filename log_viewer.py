@@ -42,29 +42,32 @@ class LogViewer(tk.Tk):
         log_list.bind('<<ListboxSelect>>', self.on_select)
         self.log_list = log_list
         for elem in self.log_list_test:
-            # opt = {k: v for k, v in zip(LogRecord.__fields__, elem)}
-            # rec = LogRecord(**opt)
             rec = LogRecord.from_list(elem)
             log_list.insert(tk.END, str(rec))
         form = tk.Frame(self)
         form.grid(column=1, row=0, sticky=tk.N)
-        for row, fld in enumerate(LogRecord.__fields__):
-            _ = tk.Label(form, text=fld)
+        for row, fld_name in enumerate(LogRecord.__fields__):
+            _ = tk.Label(form, text=fld_name)
             _.grid(column=0, row=row)
-            _ = tk.Entry(form)
+            var = tk.StringVar()
+            setattr(self, f'_{fld_name}_var', var)
+            _ = tk.Entry(form, textvariable=var)
             _.grid(column=1, row=row)
+
+    def update_fields(self, log_rec: LogRecord):
+        for row, fld_name in enumerate(LogRecord.__fields__):
+            var = getattr(self, f'_{fld_name}_var')
+            var.set(getattr(log_rec, fld_name))
+            # val = var.get()
+            # print(f'{val = }')
 
     def on_select(self, event):
         index = event.widget.curselection()
         if isinstance(index, tuple):
             index = index[0]
-        # if index:
         item = event.widget.get(index)
-        # opt = {k: v.strip() for k, v in
-        #        zip(LogRecord.__fields__, item.split('|'))}
-        # rec = LogRecord(**opt)
         rec = LogRecord.from_list(item.split('|'))
-        print(f'{rec = }')
+        self.update_fields(rec)
 
 
 if __name__ == '__main__':
