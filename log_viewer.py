@@ -27,6 +27,7 @@ class LogRecord(BaseModel):
 
 
 class LogViewer(tk.Tk):
+    # LOG_FORM_FLD = f'_{fld_name}_var'
     log_list_test = [
         ('639', '2024-01-26 13:00:00', 'pee', '439', 'Creatine'),
         ('640', '2024-01-26 13:31:00', 'pee', '581', ''),
@@ -45,21 +46,46 @@ class LogViewer(tk.Tk):
             rec = LogRecord.from_list(elem)
             log_list.insert(tk.END, str(rec))
         form = tk.Frame(self)
-        form.grid(column=1, row=0, sticky=tk.N)
+        form.grid(column=1, row=0, sticky=tk.NS)
         for row, fld_name in enumerate(LogRecord.__fields__):
             _ = tk.Label(form, text=fld_name)
             _.grid(column=0, row=row)
             var = tk.StringVar()
+            # The name of the tk.StringVar variable holding the
+            # corresponding LogRecord attribute,
+            # e.g., LogRecord.stamp -> self._stamp_var
             setattr(self, f'_{fld_name}_var', var)
             _ = tk.Entry(form, textvariable=var)
             _.grid(column=1, row=row)
+        row += 1
+        buttons_bar = tk.Frame(form)
+        form.rowconfigure(row, weight=1)
+        buttons_bar.grid(column=0, row=row, columnspan=2, sticky=tk.S)
+        add_btn = tk.Button(buttons_bar, text='Add', command=self.add_log)
+        add_btn.grid(column=0, row=0)
+        update_btn = tk.Button(buttons_bar, text='Update',
+                               command=self.update_log)
+        update_btn.grid(column=1, row=0)
+
+    def add_log(self):
+        rec = self.get_logrecord()
+        print(f'{rec = }')
+
+    def update_log(self):
+        rec = self.get_logrecord()
+        print(f'{rec = }')
 
     def update_fields(self, log_rec: LogRecord):
         for row, fld_name in enumerate(LogRecord.__fields__):
             var = getattr(self, f'_{fld_name}_var')
             var.set(getattr(log_rec, fld_name))
-            # val = var.get()
-            # print(f'{val = }')
+
+    def get_logrecord(self) -> LogRecord:
+        fld_list = []
+        for fld_name in LogRecord.__fields__:
+            fld_val = getattr(self, f'_{fld_name}_var').get()
+            fld_list.append(fld_val)
+        return LogRecord.from_list(fld_list)
 
     def on_select(self, event):
         index = event.widget.curselection()
