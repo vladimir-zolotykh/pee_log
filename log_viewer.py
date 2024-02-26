@@ -37,7 +37,7 @@ class LogViewer(tk.Tk):
     def __init__(self, *args, **kwargs):
         super().__init__()
         self.form_vars = {}
-        # form vars (StringVar), id, stamp, etc. (see LogRecord)
+        # form variables (StringVar), id, stamp, etc. (see LogRecord)
         log_list = tk.Listbox(self, selectmode=tk.SINGLE, width=40, height=25)
         self.columnconfigure(0, weight=1)
         self.rowconfigure(0, weight=1)
@@ -53,11 +53,6 @@ class LogViewer(tk.Tk):
             _ = tk.Label(form, text=fld_name)
             _.grid(column=0, row=row)
             var = self.get_var(fld_name)
-            # var = tk.StringVar()
-            # The name of the tk.StringVar variable holding the
-            # corresponding LogRecord attribute,
-            # e.g., LogRecord.stamp -> self._stamp_var
-            # setattr(self, f'_{fld_name}_var', var)
             _ = tk.Entry(form, textvariable=var)
             _.grid(column=1, row=row)
         row += 1
@@ -98,16 +93,12 @@ class LogViewer(tk.Tk):
 
     def update_fields(self, log_rec: LogRecord):
         for row, fld_name in enumerate(LogRecord.__fields__):
-            # var = getattr(self, f'_{fld_name}_var')
-            # var.set(getattr(log_rec, fld_name))
             self.set_val(fld_name, getattr(log_rec, fld_name))
 
     def get_logrecord(self) -> LogRecord:
         fld_list = []
         for fld_name in LogRecord.__fields__:
             fld_list.append(self.get_var(fld_name).get())
-            # fld_val = getattr(self, f'_{fld_name}_var').get()
-            # fld_list.append(fld_val)
         return LogRecord.from_list(fld_list)
 
     def on_select(self, event):
