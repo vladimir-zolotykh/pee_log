@@ -96,10 +96,8 @@ class LogViewer(tk.Tk):
             self.set_val(fld_name, getattr(log_rec, fld_name))
 
     def get_logrecord(self) -> LogRecord:
-        fld_list = []
-        for fld_name in LogRecord.__fields__:
-            fld_list.append(self.get_var(fld_name).get())
-        return LogRecord.from_list(fld_list)
+        return LogRecord.from_list([self.get_var(fld_name).get()
+                                    for fld_name in LogRecord.__fields__])
 
     def on_select(self, event):
         index = event.widget.curselection()
