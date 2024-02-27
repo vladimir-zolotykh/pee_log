@@ -1,0 +1,29 @@
+
++-----+--------------------------------------------------------------------+
+|'%d' |Action code: 0 for an attempted deletion, 1 for an attempted        |
+|     |insertion, or -1 if the callback was called for focus in, focus out,|
+|     |or a change to the textvariable.                                    |
++-----+--------------------------------------------------------------------+
+|'%i' |When the user attempts to insert or delete text, this argument will |
+|     |be the index of the beginning of the insertion or deletion. If the  |
+|     |callback was due to focus in, focus out, or a change to the         |
+|     |textvariable, the argument will be -1.                              |
++-----+--------------------------------------------------------------------+
+|'%P' |The value that the text will have if the change is allowed.         |
+|     |                                                                    |
++-----+--------------------------------------------------------------------+
+|'%s' |The text in the entry before the change.                            |
+|     |                                                                    |
++-----+--------------------------------------------------------------------+
+|'%S' |If the call was due to an insertion or deletion, this argument will |
+|     |be the text being inserted or deleted.                              |
++-----+--------------------------------------------------------------------+
+|'%v' |The current value of the widget's validate option, i.e., "key"      |
+|     |                                                                    |
++-----+--------------------------------------------------------------------+
+|'%V' |The reason for this callback: one of 'focusin', 'focusout', 'key',  |
+|     |or 'forced' if the textvariable was changed.                        |
++-----+--------------------------------------------------------------------+
+|'%W' |The name of the widget, i.e., .!entry                               |
+|     |                                                                    |
++-----+--------------------------------------------------------------------+
