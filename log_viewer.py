@@ -14,9 +14,6 @@ class ConnectionDiary(sqlite3.Connection):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-    def read_raw(self):
-        return self.execute('select * from pee_log')
-
     def read_logs(self):
         return (LogRecord.from_list(row[:2] + ('pee', ) + row[2:])
                 for row in self.execute('select * from pee_log'))
@@ -65,9 +62,6 @@ class LogViewer(tk.Tk):
         self.log_list = log_list
         for log in self.db_con.read_logs():
             log_list.insert(tk.END, str(log))
-        # for elem in self.log_list_test:
-        #     rec = LogRecord.from_list(elem)
-        #     log_list.insert(tk.END, str(rec))
         form = tk.Frame(self)
         form.grid(column=1, row=0, sticky=tk.NS)
         for row, fld_name in enumerate(LogRecord.__fields__):
@@ -85,8 +79,6 @@ class LogViewer(tk.Tk):
         update_btn = tk.Button(buttons_bar, text='Update',
                                command=self.update_log)
         update_btn.grid(column=1, row=0)
-        # for log in self.db_con.read_logs():
-        #     print(log)
 
     def get_var(self, fld_name):
         """Return tk.StringVar "form variable" named FLD_NAME
