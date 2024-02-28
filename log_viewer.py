@@ -63,9 +63,11 @@ class LogViewer(tk.Tk):
         log_list.grid(column=0, row=0, sticky=tk.NSEW)
         log_list.bind('<<ListboxSelect>>', self.on_select)
         self.log_list = log_list
-        for elem in self.log_list_test:
-            rec = LogRecord.from_list(elem)
-            log_list.insert(tk.END, str(rec))
+        for log in self.db_con.read_logs():
+            log_list.insert(tk.END, str(log))
+        # for elem in self.log_list_test:
+        #     rec = LogRecord.from_list(elem)
+        #     log_list.insert(tk.END, str(rec))
         form = tk.Frame(self)
         form.grid(column=1, row=0, sticky=tk.NS)
         for row, fld_name in enumerate(LogRecord.__fields__):
@@ -83,8 +85,8 @@ class LogViewer(tk.Tk):
         update_btn = tk.Button(buttons_bar, text='Update',
                                command=self.update_log)
         update_btn.grid(column=1, row=0)
-        for log in self.db_con.read_logs():
-            print(log)
+        # for log in self.db_con.read_logs():
+        #     print(log)
 
     def get_var(self, fld_name):
         """Return tk.StringVar "form variable" named FLD_NAME
