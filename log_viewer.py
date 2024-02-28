@@ -54,7 +54,8 @@ class LogViewer(tk.Tk):
         self.db_con = con
         self.form_vars = {}
         # form variables (StringVar), id, stamp, etc. (see LogRecord)
-        log_list = tk.Listbox(self, selectmode=tk.SINGLE, width=40, height=25)
+        log_list = tk.Listbox(self, selectmode=tk.SINGLE, width=60, height=25,
+                              font=('Courier', 12))
         self.columnconfigure(0, weight=1)
         self.rowconfigure(0, weight=1)
         log_list.grid(column=0, row=0, sticky=tk.NSEW)
