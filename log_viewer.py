@@ -5,6 +5,21 @@
 from datetime import datetime
 from pydantic import BaseModel
 import tkinter as tk
+import sqlite3
+import argparse
+import argcomplete
+
+
+class ConnectionDiary(sqlite3.Connection):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+    def read_raw(self):
+        return self.execute('select * from pee_log')
+
+    def read_logs(self):
+        return (LogRecord.from_list(row[:2] + ('pee', ) + row[2:])
+                for row in self.execute('select * from pee_log'))
 
 
 class LogRecord(BaseModel):
@@ -16,7 +31,10 @@ class LogRecord(BaseModel):
 
     @classmethod
     def from_list(cls, values):
-        opt = {k: v.strip() for k, v in zip(cls.__fields__, values)}
+        def _strip_if(a):
+            return a.strip() if isinstance(a, str) else a
+
+        opt = {k: _strip_if(v) for k, v in zip(cls.__fields__, values)}
         return cls(**opt)
 
     def __str__(self):
@@ -34,8 +52,9 @@ class LogViewer(tk.Tk):
         ('641', '2024-01-26 14:00:00', 'pee', '706', '')
     ]
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, con, *args, **kwargs):
         super().__init__()
+        self.db_con = con
         self.form_vars = {}
         # form variables (StringVar), id, stamp, etc. (see LogRecord)
         log_list = tk.Listbox(self, selectmode=tk.SINGLE, width=40, height=25)
@@ -64,6 +83,8 @@ class LogViewer(tk.Tk):
         update_btn = tk.Button(buttons_bar, text='Update',
                                command=self.update_log)
         update_btn.grid(column=1, row=0)
+        for log in self.db_con.read_logs():
+            print(log)
 
     def get_var(self, fld_name):
         """Return tk.StringVar "form variable" named FLD_NAME
@@ -108,6 +129,16 @@ class LogViewer(tk.Tk):
         self.update_fields(rec)
 
 
+parser = argparse.ArgumentParser(
+    description="pee_log db veiwer",
+    formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+parser.add_argument('--db', help='Database file (.db)',
+                    default='./pee_diary.db')
+
+
 if __name__ == '__main__':
-    v = LogViewer()
-    v.mainloop()
+    argcomplete.autocomplete(parser)
+    args = parser.parse_args()
+    with sqlite3.connect(args.db, factory=ConnectionDiary) as con:
+        v = LogViewer(con)
+        v.mainloop()
