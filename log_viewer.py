@@ -35,10 +35,11 @@ class LogRecord(BaseModel):
         return cls(**opt)
 
     def __str__(self):
-        '''Return the string {:>5s}|{:20s}|{:>6s}|{:10s}'''
+        '''Return Listbox line at "as it is"'''
 
-        return '{:>5s}|{:20s}|{:10s}|{:>6s}|{:10s}'.format(
-            *(map(str, list(self.dict().values()))))
+        values = list(map(str, list(self.dict().values())))
+        values[1] = self.stamp.strftime('%Y-%m-%d %H:%M')
+        return '{:>5s}|{:17s}|{:10s}|{:>6s}|{:10s}'.format(*values)
 
 
 class LogViewer(tk.Tk):
