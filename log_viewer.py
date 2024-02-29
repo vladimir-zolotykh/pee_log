@@ -4,11 +4,11 @@
 # from dataclasses import dataclass
 from datetime import datetime
 from pydantic import BaseModel
-import tkinter as tk
 import sqlite3
 import argparse
 import argcomplete
-
+import tkinter as tk
+from tkinter import ttk
 
 class ConnectionDiary(sqlite3.Connection):
     def __init__(self, *args, **kwargs):
@@ -67,10 +67,15 @@ class LogViewer(tk.Tk):
         form.grid(column=1, row=0, sticky=tk.NS)
         for row, fld_name in enumerate(LogRecord.__fields__):
             _ = tk.Label(form, text=fld_name)
-            _.grid(column=0, row=row)
+            _.grid(column=0, row=row, sticky=tk.E)
             var = self.get_var(fld_name)
-            _ = tk.Entry(form, textvariable=var)
-            _.grid(column=1, row=row)
+            if fld_name == 'label':
+                _ = ttk.Combobox(form, textvariable=var,
+                                 values=['pee', 'IMET', 'Creatine', 'Coffee',
+                                         'other'])
+            else:
+                _ = tk.Entry(form, textvariable=var)
+            _.grid(column=1, row=row, sticky=tk.W)
         row += 1
         buttons_bar = tk.Frame(form)
         form.rowconfigure(row, weight=1)
