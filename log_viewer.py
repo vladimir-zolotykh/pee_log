@@ -80,11 +80,11 @@ class LogViewer(tk.Tk):
         buttons_bar = tk.Frame(form)
         form.rowconfigure(row, weight=1)
         buttons_bar.grid(column=0, row=row, columnspan=2, sticky=tk.S)
-        add_btn = tk.Button(buttons_bar, text='Add', command=self.add_log)
-        add_btn.grid(column=0, row=0)
+        # add_btn = tk.Button(buttons_bar, text='Add', command=self.add_log)
+        # add_btn.grid(column=0, row=0)
         update_btn = tk.Button(buttons_bar, text='Update',
                                command=self.update_log)
-        update_btn.grid(column=1, row=0)
+        update_btn.grid(column=0, row=0)
 
     def update_log_list(self):
         """Update Listbox (.log_list)
@@ -113,11 +113,16 @@ class LogViewer(tk.Tk):
         var = self.get_var(fld_name)
         var.set(value)
 
-    def add_log(self):
-        rec = self.get_logrecord()
-        print(f'{rec = }')
+    # def add_log(self):
+    #     rec = self.get_logrecord()
+    #     print(f'{rec = }')
 
     def update_log(self):
+        '''Update the record or add a new
+
+        if ID exists in the db, update the record, otherwise add a new
+        record
+        '''
         rec = self.get_logrecord()
         print(f'{rec = }')
 
