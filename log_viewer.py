@@ -9,6 +9,8 @@ import argparse
 import argcomplete
 import tkinter as tk
 from tkinter import ttk
+from tkinter.messagebox import askyesno
+
 
 class ConnectionDiary(sqlite3.Connection):
     def __init__(self, *args, **kwargs):
@@ -124,7 +126,21 @@ class LogViewer(tk.Tk):
         record
         '''
         rec = self.get_logrecord()
-        print(f'{rec = }')
+        ins_cmd = """
+            INSERT INTO pee_log (id, pee_time, volume, note)
+            VALUES (?, ?, ?, ?)
+        """
+        upd_cmd = """
+            UPDATE pee_log
+            SET pee_time = ?, volume = ?, note = ?
+            WHERE id = ?
+        """
+        try:
+            self.db_con.execute(ins_cmd, rec.dict().values())
+        except sqlite3.IntegrityError:
+            if askyesno(f"{__file__}", f"Log {rec.id} exists. Update? ",
+                        parent=self):
+                self.db_con.execute(upd_cmd, rec.dict().values[1:])
 
     def update_fields(self, log_rec: LogRecord):
         for row, fld_name in enumerate(LogRecord.__fields__):
