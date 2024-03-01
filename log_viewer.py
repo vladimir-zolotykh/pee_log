@@ -88,17 +88,24 @@ class LogViewer(tk.Tk):
                 padx = 2
             else:
                 _ = tk.Entry(form, textvariable=var)
+                _.bind("<Double-1>", self.muffle_click)
                 padx = 1
             _.grid(column=1, row=row, sticky=tk.W, padx=padx)
         row += 1
         buttons_bar = tk.Frame(form)
         form.rowconfigure(row, weight=1)
         buttons_bar.grid(column=0, row=row, columnspan=2, sticky=tk.S)
-        # add_btn = tk.Button(buttons_bar, text='Add', command=self.add_log)
-        # add_btn.grid(column=0, row=0)
         update_btn = tk.Button(buttons_bar, text='Update',
                                command=self.update_log)
         update_btn.grid(column=0, row=0)
+        clear_btn = tk.Button(buttons_bar, text='0', command=self.erase_fields)
+        clear_btn.grid(column=1, row=0)
+        self.del_btn = tk.Button(buttons_bar, text='Del', command=self.del_log,
+                                 state=tk.DISABLED)
+        self.del_btn.grid(column=2, row=0)
+
+    def muffle_click(self, event):
+        return "break"
 
     def update_log_list(self):
         """Update Listbox (.log_list)
@@ -127,9 +134,12 @@ class LogViewer(tk.Tk):
         var = self.get_var(fld_name)
         var.set(value)
 
-    # def add_log(self):
-    #     rec = self.get_logrecord()
-    #     print(f'{rec = }')
+    def erase_fields(self):
+        for var in self.form_vars.values():
+            var.set('')
+
+    def del_log(self):
+        pass
 
     def update_log(self):
         '''Update the record or add a new
@@ -173,6 +183,7 @@ class LogViewer(tk.Tk):
             item = event.widget.get(index)
             rec = LogRecord.from_list(item.split('|'))
             self.update_fields(rec)
+            self.del_btn.config(state=tk.NORMAL)
 
 
 parser = argparse.ArgumentParser(
