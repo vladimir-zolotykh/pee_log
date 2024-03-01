@@ -85,9 +85,11 @@ class LogViewer(tk.Tk):
                 _ = ttk.Combobox(form, textvariable=var,
                                  values=['pee', 'IMET', 'Creatine', 'Coffee',
                                          'other'])
+                padx = 2
             else:
                 _ = tk.Entry(form, textvariable=var)
-            _.grid(column=1, row=row, sticky=tk.W)
+                padx = 1
+            _.grid(column=1, row=row, sticky=tk.W, padx=padx)
         row += 1
         buttons_bar = tk.Frame(form)
         form.rowconfigure(row, weight=1)
