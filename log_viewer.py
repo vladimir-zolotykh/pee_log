@@ -142,7 +142,7 @@ class LogViewer(tk.Tk):
         """
         upd_cmd = """
             UPDATE pee_log
-            SET pee_time = ?, volume = ?, note = ?
+            SET pee_time = ?, label = ?, volume = ?, note = ?
             WHERE id = ?
         """
         try:
@@ -150,7 +150,8 @@ class LogViewer(tk.Tk):
         except sqlite3.IntegrityError:
             if askyesno(f"{__file__}", f"Log {rec.id} exists. Update? ",
                         parent=self):
-                self.db_con.execute(upd_cmd, rec.dict().values[1:])
+                _values = list(rec.dict().values())
+                self.db_con.execute(upd_cmd, _values[1:] + _values[:1])
         self.update_log_list()
 
     def update_fields(self, log_rec: LogRecord):
