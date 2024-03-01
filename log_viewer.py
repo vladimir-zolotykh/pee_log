@@ -162,12 +162,14 @@ class LogViewer(tk.Tk):
                                     for fld_name in LogRecord.__fields__])
 
     def on_select(self, event):
+        # Double-clicking any Entry widget fires <<ListboxSelect>>
+        # virtual event with .curselection() returning an empty tuple.
         index = event.widget.curselection()
-        if isinstance(index, tuple):
+        if bool(index):         # ensure index is not an empty tuple
             index = index[0]
-        item = event.widget.get(index)
-        rec = LogRecord.from_list(item.split('|'))
-        self.update_fields(rec)
+            item = event.widget.get(index)
+            rec = LogRecord.from_list(item.split('|'))
+            self.update_fields(rec)
 
 
 parser = argparse.ArgumentParser(
