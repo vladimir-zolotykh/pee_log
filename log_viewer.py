@@ -16,9 +16,19 @@ class ConnectionDiary(sqlite3.Connection):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
+    def make_tables(self):
+        self.execute('''
+            CREATE TABLE IF NOT EXISTS pee_log (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                pee_time TEXT,
+                label TEXT,
+                volume INT DEFAULT 0,
+                note TEXT DEFAULT '')
+        ''')
+
     def read_logs(self):
-        return (LogRecord.from_list(row[:2] + ('pee', ) + row[2:])
-                for row in self.execute('select * from pee_log'))
+        return (LogRecord.from_list(row)
+                for row in self.execute('SELECT * FROM pee_log'))
 
 
 class LogRecord(BaseModel):
@@ -127,8 +137,8 @@ class LogViewer(tk.Tk):
         '''
         rec = self.get_logrecord()
         ins_cmd = """
-            INSERT INTO pee_log (id, pee_time, volume, note)
-            VALUES (?, ?, ?, ?)
+            INSERT INTO pee_log (id, pee_time, label, volume, note)
+            VALUES (?, ?, ?, ?, ?)
         """
         upd_cmd = """
             UPDATE pee_log
@@ -136,11 +146,12 @@ class LogViewer(tk.Tk):
             WHERE id = ?
         """
         try:
-            self.db_con.execute(ins_cmd, rec.dict().values())
+            self.db_con.execute(ins_cmd, list(rec.dict().values()))
         except sqlite3.IntegrityError:
             if askyesno(f"{__file__}", f"Log {rec.id} exists. Update? ",
                         parent=self):
                 self.db_con.execute(upd_cmd, rec.dict().values[1:])
+        self.update_log_list()
 
     def update_fields(self, log_rec: LogRecord):
         for row, fld_name in enumerate(LogRecord.__fields__):
