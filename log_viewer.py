@@ -137,9 +137,8 @@ class LogViewer(tk.Tk):
         var.set(value)
 
     def make_new(self):
-        """Clear form fields
+        """Set the form field to the defaults"""
 
-        'volume', 'label' set to their defaults"""
         max_sql = '''
             SELECT MAX(id) + 1
             FROM pee_log
