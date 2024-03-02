@@ -85,7 +85,7 @@ class LogViewer(tk.Tk):
             if fld_name == 'label':
                 _ = ttk.Combobox(form, textvariable=var,
                                  values=['pee', 'IMET', 'Creatine', 'Coffee',
-                                         'other'])
+                                         'headache', 'other'])
                 padx = 2
             else:
                 _ = tk.Entry(form, textvariable=var)
@@ -99,7 +99,7 @@ class LogViewer(tk.Tk):
         update_btn = tk.Button(buttons_bar, text='Update',
                                command=self.update_log)
         update_btn.grid(column=0, row=0)
-        self.erase_btn = tk.Button(buttons_bar, text='erase',
+        self.erase_btn = tk.Button(buttons_bar, text='new',
                                    command=self.erase_fields)
         self.erase_btn.grid(column=1, row=0)
         self.del_btn = tk.Button(buttons_bar, text='Del', command=self.del_log,
@@ -140,9 +140,16 @@ class LogViewer(tk.Tk):
         """Clear form fields
 
         'volume', 'label' set to their defaults"""
-
+        max_sql = '''
+            SELECT MAX(id) + 1
+            FROM pee_log
+        '''
         for fld_name, var in self.form_vars.items():
             var.set('')
+            if fld_name == 'id':
+                var.set(str(self.db_con.execute(max_sql).fetchone()[0]))
+            if fld_name == 'stamp':
+                var.set(datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
             if fld_name == 'volume':
                 var.set('0')
             if fld_name == 'label':
