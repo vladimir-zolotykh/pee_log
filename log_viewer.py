@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 # PYTHON_ARGCOMPLETE_OK
 # from dataclasses import dataclass
+import os
 from datetime import datetime
 from pydantic import BaseModel
 import sqlite3
@@ -141,7 +142,16 @@ class LogViewer(tk.Tk):
         self.del_btn.config(state=tk.DISABLED)
 
     def del_log(self):
-        pass
+        rec = self.get_logrecord()
+        del_sql = '''
+            DELETE FROM pee_log
+            WHERE id = ?
+        '''
+        if askyesno(f"{os.path.basename(__file__)}",
+                    f"Delete log id={rec.id}? ",
+                    parent=self):
+            self.db_con.execute(del_sql, rec.id)
+        self.update_log_list()
 
     def update_log(self):
         '''Update the record or add a new
@@ -173,6 +183,8 @@ class LogViewer(tk.Tk):
             self.set_val(fld_name, getattr(log_rec, fld_name))
 
     def get_logrecord(self) -> LogRecord:
+        '''Get 'form' fields, make a LogRecord from them, return'''
+
         return LogRecord.from_list([self.get_var(fld_name).get()
                                     for fld_name in LogRecord.__fields__])
 
