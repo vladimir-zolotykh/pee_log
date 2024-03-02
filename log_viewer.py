@@ -99,7 +99,7 @@ class LogViewer(tk.Tk):
         update_btn = tk.Button(buttons_bar, text='Update',
                                command=self.update_log)
         update_btn.grid(column=0, row=0)
-        self.erase_btn = tk.Button(buttons_bar, text='X',
+        self.erase_btn = tk.Button(buttons_bar, text='erase',
                                    command=self.erase_fields)
         self.erase_btn.grid(column=1, row=0)
         self.del_btn = tk.Button(buttons_bar, text='Del', command=self.del_log,
@@ -137,6 +137,10 @@ class LogViewer(tk.Tk):
         var.set(value)
 
     def erase_fields(self):
+        """Clear form fields
+
+        'volume', 'label' set to their defaults"""
+
         for fld_name, var in self.form_vars.items():
             var.set('')
             if fld_name == 'volume':
@@ -146,6 +150,8 @@ class LogViewer(tk.Tk):
         self.del_btn.config(state=tk.DISABLED)
 
     def del_log(self):
+        """Delete selected log record"""
+
         rec = self.get_logrecord()
         del_sql = '''
             DELETE FROM pee_log
