@@ -137,8 +137,12 @@ class LogViewer(tk.Tk):
         var.set(value)
 
     def erase_fields(self):
-        for var in self.form_vars.values():
+        for fld_name, var in self.form_vars.items():
             var.set('')
+            if fld_name == 'volume':
+                var.set('0')
+            if fld_name == 'label':
+                var.set('pee')
         self.del_btn.config(state=tk.DISABLED)
 
     def del_log(self):
