@@ -90,7 +90,7 @@ class LogViewer(tk.Tk):
                 _ = tk.Entry(form, textvariable=var)
                 _.bind("<Double-1>", self.muffle_click)
                 padx = 1
-            _.grid(column=1, row=row, sticky=tk.W, padx=padx)
+            _.grid(column=1, row=row, sticky=tk.W, padx=padx, pady=2)
         row += 1
         buttons_bar = tk.Frame(form)
         form.rowconfigure(row, weight=1)
@@ -98,8 +98,9 @@ class LogViewer(tk.Tk):
         update_btn = tk.Button(buttons_bar, text='Update',
                                command=self.update_log)
         update_btn.grid(column=0, row=0)
-        clear_btn = tk.Button(buttons_bar, text='0', command=self.erase_fields)
-        clear_btn.grid(column=1, row=0)
+        self.erase_btn = tk.Button(buttons_bar, text='X',
+                                   command=self.erase_fields)
+        self.erase_btn.grid(column=1, row=0)
         self.del_btn = tk.Button(buttons_bar, text='Del', command=self.del_log,
                                  state=tk.DISABLED)
         self.del_btn.grid(column=2, row=0)
@@ -137,6 +138,7 @@ class LogViewer(tk.Tk):
     def erase_fields(self):
         for var in self.form_vars.values():
             var.set('')
+        self.del_btn.config(state=tk.DISABLED)
 
     def del_log(self):
         pass
