@@ -172,7 +172,8 @@ class LogViewer(tk.Tk):
         try:
             self.db_con.execute(ins_cmd, list(rec.dict().values()))
         except sqlite3.IntegrityError:
-            if askyesno(f"{__file__}", f"Log {rec.id} exists. Update? ",
+            if askyesno(f"{os.path.basename(__file__)}",
+                        f"Log {rec.id} exists. Update? ",
                         parent=self):
                 _values = list(rec.dict().values())
                 self.db_con.execute(upd_cmd, _values[1:] + _values[:1])
