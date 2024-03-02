@@ -100,7 +100,7 @@ class LogViewer(tk.Tk):
                                command=self.update_log)
         update_btn.grid(column=0, row=0)
         self.erase_btn = tk.Button(buttons_bar, text='new',
-                                   command=self.erase_fields)
+                                   command=self.make_new)
         self.erase_btn.grid(column=1, row=0)
         self.del_btn = tk.Button(buttons_bar, text='Del', command=self.del_log,
                                  state=tk.DISABLED)
@@ -136,7 +136,7 @@ class LogViewer(tk.Tk):
         var = self.get_var(fld_name)
         var.set(value)
 
-    def erase_fields(self):
+    def make_new(self):
         """Clear form fields
 
         'volume', 'label' set to their defaults"""
