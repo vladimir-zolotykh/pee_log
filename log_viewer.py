@@ -150,7 +150,7 @@ class LogViewer(tk.Tk):
         if askyesno(f"{os.path.basename(__file__)}",
                     f"Delete log id={rec.id}? ",
                     parent=self):
-            self.db_con.execute(del_sql, rec.id)
+            self.db_con.execute(del_sql, (rec.id, ))
         self.update_log_list()
 
     def update_log(self):
