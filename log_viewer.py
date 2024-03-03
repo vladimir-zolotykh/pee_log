@@ -11,6 +11,7 @@ import argcomplete
 import tkinter as tk
 from tkinter import ttk
 from tkinter.messagebox import askyesno
+from scrolled_listbox import ScrolledListbox
 
 
 class ConnectionDiary(sqlite3.Connection):
@@ -67,9 +68,8 @@ class LogViewer(tk.Tk):
         super().__init__()
         self.db_con = con
         self.form_vars = {}
-        # form variables (StringVar), id, stamp, etc. (see LogRecord)
-        log_list = tk.Listbox(self, selectmode=tk.SINGLE, width=60, height=25,
-                              font=('Courier', 12))
+        log_list = ScrolledListbox(self, selectmode=tk.SINGLE, width=60,
+                                   height=25, font=('Courier', 12))
         self.columnconfigure(0, weight=1)
         self.rowconfigure(0, weight=1)
         log_list.grid(column=0, row=0, sticky=tk.NSEW)
@@ -109,8 +109,8 @@ class LogViewer(tk.Tk):
                 padx = 2
             else:
                 _ = tk.Entry(form, textvariable=var)
-                _.bind("<Double-1>", self.muffle_click)
                 padx = 1
+            _.bind("<Double-1>", self.muffle_click)
             _.grid(column=1, row=row, sticky=tk.W, padx=padx, pady=2)
         return row
 
@@ -155,7 +155,6 @@ class LogViewer(tk.Tk):
             FROM pee_log
         '''
 
-        self.set_form_default()
         for fld_name, var in self.form_vars.items():
             var.set('')
             if fld_name == 'id':
