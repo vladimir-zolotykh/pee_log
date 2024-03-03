@@ -78,6 +78,26 @@ class LogViewer(tk.Tk):
         self.update_log_list()
         form = tk.Frame(self)
         form.grid(column=1, row=0, sticky=tk.NS)
+        row = self.create_form_fields(form)
+        row += 1
+        buttons_bar = tk.Frame(form)
+        form.rowconfigure(row, weight=1)
+        buttons_bar.grid(column=0, row=row, columnspan=2, sticky=tk.S)
+        update_btn = tk.Button(buttons_bar, text='Update',
+                               command=self.update_log)
+        update_btn.grid(column=0, row=0)
+        self.erase_btn = tk.Button(buttons_bar, text='new',
+                                   command=self.make_new)
+        self.erase_btn.grid(column=1, row=0)
+        self.del_btn = tk.Button(buttons_bar, text='Del', command=self.del_log,
+                                 state=tk.DISABLED)
+        self.del_btn.grid(column=2, row=0)
+
+    def create_form_fields(self, form) -> int:
+        """Create form fields and their StringVar -s
+
+        see self.form_vars dict
+        """
         for row, fld_name in enumerate(LogRecord.__fields__):
             _ = tk.Label(form, text=fld_name)
             _.grid(column=0, row=row, sticky=tk.E)
@@ -92,19 +112,10 @@ class LogViewer(tk.Tk):
                 _.bind("<Double-1>", self.muffle_click)
                 padx = 1
             _.grid(column=1, row=row, sticky=tk.W, padx=padx, pady=2)
-        row += 1
-        buttons_bar = tk.Frame(form)
-        form.rowconfigure(row, weight=1)
-        buttons_bar.grid(column=0, row=row, columnspan=2, sticky=tk.S)
-        update_btn = tk.Button(buttons_bar, text='Update',
-                               command=self.update_log)
-        update_btn.grid(column=0, row=0)
-        self.erase_btn = tk.Button(buttons_bar, text='new',
-                                   command=self.make_new)
-        self.erase_btn.grid(column=1, row=0)
-        self.del_btn = tk.Button(buttons_bar, text='Del', command=self.del_log,
-                                 state=tk.DISABLED)
-        self.del_btn.grid(column=2, row=0)
+        return row
+
+    def set_form_default(self, form):
+        pass
 
     def muffle_click(self, event):
         return "break"
@@ -143,6 +154,8 @@ class LogViewer(tk.Tk):
             SELECT MAX(id) + 1
             FROM pee_log
         '''
+
+        self.set_form_default()
         for fld_name, var in self.form_vars.items():
             var.set('')
             if fld_name == 'id':
