@@ -156,15 +156,16 @@ class LogViewer(tk.Tk):
         '''
 
         for fld_name, var in self.form_vars.items():
-            var.set('')
             if fld_name == 'id':
                 var.set(str(self.db_con.execute(max_sql).fetchone()[0]))
-            if fld_name == 'stamp':
+            elif fld_name == 'stamp':
                 var.set(datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
-            if fld_name == 'volume':
+            elif fld_name == 'volume':
                 var.set('0')
-            if fld_name == 'label':
+            elif fld_name == 'label':
                 var.set('pee')
+            else:
+                var.set('')
         self.del_btn.config(state=tk.DISABLED)
 
     def del_log(self):
