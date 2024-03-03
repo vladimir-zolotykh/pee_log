@@ -12,6 +12,7 @@ import tkinter as tk
 from tkinter import ttk
 from tkinter.messagebox import askyesno
 from scrolled_listbox import ScrolledListbox
+from time4 import Time4
 
 
 class ConnectionDiary(sqlite3.Connection):
@@ -102,7 +103,10 @@ class LogViewer(tk.Tk):
             _ = tk.Label(form, text=fld_name)
             _.grid(column=0, row=row, sticky=tk.E)
             var = self.get_var(fld_name)
-            if fld_name == 'label':
+            if fld_name == 'stamp':
+                _ = Time4(form, textvariable=var)
+                padx = 1
+            elif fld_name == 'label':
                 _ = ttk.Combobox(form, textvariable=var,
                                  values=['pee', 'IMET', 'Creatine', 'Coffee',
                                          'headache', 'other'])
