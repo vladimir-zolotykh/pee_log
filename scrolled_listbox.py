@@ -18,3 +18,5 @@ class ScrolledListbox(tk.Listbox):
         vbar.config(command=self.yview)
         kwargs.update({'xscrollcommand': hbar.set, 'yscrollcommand': vbar.set})
         super(ScrolledListbox, self).__init__(box, **kwargs)
+        self.grid(column=0, row=0, sticky=tk.NSEW)
+        setattr(self, 'grid', getattr(box, 'grid'))
