@@ -58,8 +58,8 @@ datetime.datetime(2024, 3, 4, 9, 10, 11)
         self.day.set(str(dt.date()))
         self.time4.set(str(dt.time()))
 
-    def get(self):
-        return self.day.get(), self.time4.get()
+    def get(self) -> str:
+        return f'{self.day.get()} {self.time4.get()}'
 
 
 class Time4(tk.Entry):
