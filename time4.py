@@ -5,6 +5,10 @@ import tkinter as tk
 from datetime import datetime
 
 
+class InvalidTime4Value(Exception):
+    pass
+
+
 class Time4Var(tk.StringVar):
     """
 >>> dt = datetime.strptime('2024-03-04 09:10:11', '%Y-%m-%d %H:%M:%S')
@@ -50,37 +54,38 @@ datetime.datetime(2024, 3, 4, 9, 10, 11)
     def as_datetime(self) -> datetime:
         return datetime.strptime(self.as_str(), '%Y-%m-%d %H:%M:%S')
 
-    def set(self, day: str, time4: str):
-        self.day = day
-        self.time4 = time4
+    def set(self, dt: datetime):
+        self.day.set(str(dt.date()))
+        self.time4.set(str(dt.time()))
 
     def get(self):
-        return self.day, self.time4
+        return self.day.get(), self.time4.get()
 
 
 class Time4(tk.Entry):
     """Combine date (%Y-%m-%d) and time (%H%M)"""
 
-    def __init__(self, parent):
+    def __init__(self, parent, time4variable: Time4Var = None):
         box = tk.Frame(parent)
+        if time4variable is None:
+            time4variable = Time4Var()
+        self.t4var = time4variable
         box.grid(column=0, row=0, sticky=tk.EW)
         box.columnconfigure(0, weight=1)
-        self.day_var = tk.StringVar()
-        day_entry = tk.Entry(box, width=8, textvariable=self.day_var)
+        day_entry = tk.Entry(box, width=10, textvariable=self.t4var.day)
         day_entry.grid(column=0, row=0)
-        self.time_var = tk.StringVar()
-        time_entry = tk.Entry(box, width=4, textvariable=self.time_var)
+        time_entry = tk.Entry(box, width=7, textvariable=self.t4var.time4)
         time_entry.grid(column=1, row=0)
         super(Time4, self).__init__(parent)
         setattr(self, 'grid', getattr(box, 'grid'))
 
     def set4(self, stamp: str):
         d = datetime.strptime('%Y-%m-%d %H:%M:%S', str)
-        self.day_var.set(d.date())
-        self.time_var.set(d.time())
+        self.t4var.day.set(d.date())
+        self.t4var.time4.set(d.time())
 
     def get4(self) -> str:
-        day = self.day_var.get()
-        time = datetime.strptime(self.time_var.get(),
-                                 '%H%M').strftime('%H:%M:%S')
-        return (day + time)
+        day = self.t4var.get()
+        time4 = datetime.strptime(self.time_var.get(),
+                                  '%H%M').strftime('%H:%M:%S')
+        return (day + time4)
