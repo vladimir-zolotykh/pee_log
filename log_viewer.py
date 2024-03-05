@@ -12,7 +12,7 @@ import tkinter as tk
 from tkinter import ttk
 from tkinter.messagebox import askyesno
 from scrolled_listbox import ScrolledListbox
-from time4 import Time4
+from time4 import Time4, Time4Var
 
 
 class ConnectionDiary(sqlite3.Connection):
@@ -104,7 +104,7 @@ class LogViewer(tk.Tk):
             _.grid(column=0, row=row, sticky=tk.E)
             var = self.get_var(fld_name)
             if fld_name == 'stamp':
-                _ = Time4(form, textvariable=var)
+                _ = Time4(form, time4variable=var)
                 padx = 1
             elif fld_name == 'label':
                 _ = ttk.Combobox(form, textvariable=var,
@@ -117,9 +117,6 @@ class LogViewer(tk.Tk):
             _.bind("<Double-1>", self.muffle_click)
             _.grid(column=1, row=row, sticky=tk.W, padx=padx, pady=2)
         return row
-
-    def set_form_default(self, form):
-        pass
 
     def muffle_click(self, event):
         return "break"
@@ -140,7 +137,11 @@ class LogViewer(tk.Tk):
         dictionary. If the variable doesn't exist, it is created"""
 
         if fld_name not in self.form_vars:
-            self.form_vars[fld_name] = tk.StringVar()
+            if fld_name == 'stamp':
+                var = Time4Var()
+            else:
+                var = tk.StringVar()
+            self.form_vars[fld_name] = var
         return self.form_vars[fld_name]
 
     def set_val(self, fld_name, value=''):
@@ -163,7 +164,8 @@ class LogViewer(tk.Tk):
             if fld_name == 'id':
                 var.set(str(self.db_con.execute(max_sql).fetchone()[0]))
             elif fld_name == 'stamp':
-                var.set(datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
+                dt = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+                var.set(str(dt.date()), str(dt.time()))
             elif fld_name == 'volume':
                 var.set('0')
             elif fld_name == 'label':
