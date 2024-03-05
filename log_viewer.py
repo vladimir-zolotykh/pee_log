@@ -164,8 +164,8 @@ class LogViewer(tk.Tk):
             if fld_name == 'id':
                 var.set(str(self.db_con.execute(max_sql).fetchone()[0]))
             elif fld_name == 'stamp':
-                dt = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-                var.set(str(dt.date()), str(dt.time()))
+                dt = datetime.now()
+                var.set(dt)
             elif fld_name == 'volume':
                 var.set('0')
             elif fld_name == 'label':
