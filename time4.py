@@ -56,10 +56,14 @@ datetime.datetime(2024, 3, 4, 9, 10, 11)
 
     def set(self, dt: datetime):
         self.day.set(str(dt.date()))
-        self.time4.set(str(dt.time()))
+        t = dt.time()
+        self.time4.set(f'{t.hour:02d}{t.minute:02d}')
 
     def get(self) -> str:
-        return f'{self.day.get()} {self.time4.get()}'
+        t4 = self.time4.get()
+        d = datetime.strptime(t4, '%H%M')
+        tm = d.strftime('%H:%M:%S')
+        return f'{self.day.get()} {tm}'
 
 
 class Time4(tk.Entry):
@@ -80,11 +84,13 @@ class Time4(tk.Entry):
         setattr(self, 'grid', getattr(box, 'grid'))
 
     def set4(self, stamp: str):
+        raise NotImplementedError()
         d = datetime.strptime('%Y-%m-%d %H:%M:%S', str)
         self.t4var.day.set(d.date())
         self.t4var.time4.set(d.time())
 
     def get4(self) -> str:
+        raise NotImplementedError()
         day = self.t4var.get()
         time4 = datetime.strptime(self.time_var.get(),
                                   '%H%M').strftime('%H:%M:%S')
