@@ -21,6 +21,13 @@ class ConnectionDiary(sqlite3.Connection):
 
     def make_tables(self):
         self.execute('''
+            CREATE TABLE labels (
+                id INTEGER PRIMARY KEY,
+                label TEXT NOT NULL UNIQUE
+            );
+        ''')
+
+        self.execute('''
             CREATE TABLE IF NOT EXISTS pee_log (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 pee_time TEXT,
