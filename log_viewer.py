@@ -9,10 +9,11 @@ import sqlite3
 import argparse
 import argcomplete
 import tkinter as tk
-from tkinter import ttk
+from tkinter import ttk         # noqa
 from tkinter.messagebox import askyesno
 from scrolled_listbox import ScrolledListbox
 from time4 import Time4, Time4Var
+from combo_db import ComboDb, ComboVar
 
 
 class ConnectionDiary(sqlite3.Connection):
@@ -106,7 +107,11 @@ class LogViewer(tk.Tk):
 
         see self.form_vars dict
         """
-        for row, fld_name in enumerate(LogRecord.__fields__):
+        fields = list(LogRecord.__fields__)
+        index = fields.index('label')
+        fields[index:index] = ['label'] * 2
+        # for row, fld_name in enumerate(LogRecord.__fields__):
+        for row, fld_name in enumerate(fields):
             _ = tk.Label(form, text=fld_name)
             _.grid(column=0, row=row, sticky=tk.E)
             var = self.get_var(fld_name)
@@ -114,9 +119,8 @@ class LogViewer(tk.Tk):
                 _ = Time4(form, time4variable=var)
                 padx = 1
             elif fld_name == 'label':
-                _ = ttk.Combobox(form, textvariable=var,
-                                 values=['pee', 'IMET', 'Creatine', 'Coffee',
-                                         'headache', 'other'])
+                _ = ComboDb(form, db_con=self.db_con, textvariable=var)
+                _.update_values()
                 padx = 2
             else:
                 _ = tk.Entry(form, textvariable=var)
@@ -146,6 +150,8 @@ class LogViewer(tk.Tk):
         if fld_name not in self.form_vars:
             if fld_name == 'stamp':
                 var = Time4Var()
+            elif fld_name.startswith('label'):
+                var = ComboVar(self.db_con)
             else:
                 var = tk.StringVar()
             self.form_vars[fld_name] = var
@@ -228,7 +234,7 @@ class LogViewer(tk.Tk):
     def get_logrecord(self) -> LogRecord:
         '''Get 'form' fields, make a LogRecord from them, return'''
 
-        return LogRecord.from_list([self.get_var(fld_name).get()
+        return LogRecord.from_list([self.get_var(fld_name).get(parent=self)
                                     for fld_name in LogRecord.__fields__])
 
     def on_select(self, event):
