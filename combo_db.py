@@ -1,10 +1,8 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 # PYTHON_ARGCOMPLETE_OK
-import os
 import tkinter as tk
 from tkinter import ttk
-from tkinter.messagebox import askyesno
 
 
 class ComboVar(tk.StringVar):
@@ -12,23 +10,9 @@ class ComboVar(tk.StringVar):
         self.db_con = db_con
         super().__init__()
 
-    def get(self, parent=None):
-        # Search for line get(parent=self)
-        self.parent = parent
+    def get(self):
         val = super().get()
-        sql_exists = '''
-            SELECT EXISTS(SELECT 1 FROM labels WHERE label=?)
-        '''
-        sql_insert = '''
-            INSERT INTO labels(label)
-            VALUES (?)
-        '''
-        exists = self.db_con.execute(sql_exists, (val, )).fetchone()[0]
-        if not bool(exists):
-            if askyesno(f"{os.path.basename(__file__)}",
-                        f"Add label {val}? ",
-                        parent=parent):
-                self.db_con.execute(sql_insert, (val, ))
+        return val
 
 
 class ComboDb(ttk.Combobox):
