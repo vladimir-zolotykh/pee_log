@@ -4,7 +4,6 @@
 # from dataclasses import dataclass
 import os
 from datetime import datetime
-from pydantic import BaseModel
 import sqlite3
 import argparse
 import argcomplete
@@ -14,55 +13,38 @@ from tkinter.messagebox import askyesno
 from scrolled_listbox import ScrolledListbox
 from time4 import Time4, Time4Var
 from combo_db import ComboDb, ComboVar
+from logrecord import LogRecord
+import labeldb
 
 
 class ConnectionDiary(sqlite3.Connection):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        self.app = None
+        self.labels = labeldb.LabelDb(self, self.app)  # "labels" table
 
     def make_tables(self):
         self.execute('''
-            CREATE TABLE labels (
+            CREATE TABLE IF NOT EXISTS labels (
                 id INTEGER PRIMARY KEY,
                 label TEXT NOT NULL UNIQUE
             );
         ''')
-
         self.execute('''
             CREATE TABLE IF NOT EXISTS pee_log (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 pee_time TEXT,
-                label TEXT,
-                volume INT DEFAULT 0,
+                label1_id INTEGER,
+                label2_id INTEGER,
+                label3_id INTEGER,
+                volume INTEGER DEFAULT 0,
                 note TEXT DEFAULT '')
         ''')
 
     def read_logs(self):
-        return (LogRecord.from_list(row)
+        # val = LabelDb(log_viewer).label_to_id(val)
+        return (LogRecord.from_db(self, row)
                 for row in self.execute('SELECT * FROM pee_log'))
-
-
-class LogRecord(BaseModel):
-    id: int
-    stamp: datetime = datetime.now()
-    label: str = 'pee'
-    volume: int = 0
-    note: str = ''
-
-    @classmethod
-    def from_list(cls, values):
-        def _strip_if(a):
-            return a.strip() if isinstance(a, str) else a
-
-        opt = {k: _strip_if(v) for k, v in zip(cls.__fields__, values)}
-        return cls(**opt)
-
-    def __str__(self):
-        '''Return Listbox line at "as it is"'''
-
-        values = list(map(str, list(self.dict().values())))
-        values[1] = self.stamp.strftime('%Y-%m-%d %H:%M')
-        return '{:>5s}|{:17s}|{:10s}|{:>6s}|{:10s}'.format(*values)
 
 
 class LogViewer(tk.Tk):
@@ -76,6 +58,7 @@ class LogViewer(tk.Tk):
     def __init__(self, con, *args, **kwargs):
         super().__init__()
         self.db_con = con
+        con.app = self          # use case: askyesno(parent=con.app,...
         self.form_vars = {}
         log_list = ScrolledListbox(self, selectmode=tk.SINGLE, width=60,
                                    height=25, font=('Courier', 12))
@@ -107,18 +90,14 @@ class LogViewer(tk.Tk):
 
         see self.form_vars dict
         """
-        fields = list(LogRecord.__fields__)
-        index = fields.index('label')
-        fields[index:index] = ['label'] * 2
-        # for row, fld_name in enumerate(LogRecord.__fields__):
-        for row, fld_name in enumerate(fields):
+        for row, fld_name in enumerate(LogRecord.__fields__):
             _ = tk.Label(form, text=fld_name)
             _.grid(column=0, row=row, sticky=tk.E)
             var = self.get_var(fld_name)
             if fld_name == 'stamp':
                 _ = Time4(form, time4variable=var)
                 padx = 1
-            elif fld_name == 'label':
+            elif fld_name.startswith('label'):
                 _ = ComboDb(form, db_con=self.db_con, textvariable=var)
                 _.update_values()
                 padx = 2
@@ -168,20 +147,18 @@ class LogViewer(tk.Tk):
     def make_new(self):
         """Set the form field to the defaults"""
 
-        max_sql = '''
-            SELECT MAX(id) + 1
-            FROM pee_log
-        '''
-
         for fld_name, var in self.form_vars.items():
             if fld_name == 'id':
-                var.set(str(self.db_con.execute(max_sql).fetchone()[0]))
+                # var.set(str(self.db_con.execute(max_sql).fetchone()[0]))
+                sql = 'SELECT MAX(id) FROM pee_log'
+                id = con.execute(sql).fetchone()[0]
+                var.set(str(id) if isinstance(id, int) else '1')
             elif fld_name == 'stamp':
                 dt = datetime.now()
                 var.set(dt)
             elif fld_name == 'volume':
                 var.set('0')
-            elif fld_name == 'label':
+            elif fld_name == 'label1':
                 var.set('pee')
             else:
                 var.set('')
@@ -209,16 +186,21 @@ class LogViewer(tk.Tk):
         '''
         rec = self.get_logrecord()
         ins_cmd = """
-            INSERT INTO pee_log (id, pee_time, label, volume, note)
-            VALUES (?, ?, ?, ?, ?)
+            INSERT INTO pee_log (
+                pee_time, label1_id, label2_id, label3_id, volume, note
+            )
+            VALUES (?, ?, ?, ?, ?, ?)
         """
         upd_cmd = """
             UPDATE pee_log
-            SET pee_time = ?, label = ?, volume = ?, note = ?
+            SET pee_time = ?,
+                label1_id = ?, label2_id = ?, label3_id = ?,
+                volume = ?, note = ?
             WHERE id = ?
         """
         try:
-            self.db_con.execute(ins_cmd, list(rec.dict().values()))
+            # self.db_con.execute(ins_cmd, list(rec.dict().values()))
+            self.db_con.execute(ins_cmd, rec.replace_label_with_id(self)[1:])
         except sqlite3.IntegrityError:
             if askyesno(f"{os.path.basename(__file__)}",
                         f"Log {rec.id} exists. Update? ",
@@ -234,8 +216,17 @@ class LogViewer(tk.Tk):
     def get_logrecord(self) -> LogRecord:
         '''Get 'form' fields, make a LogRecord from them, return'''
 
-        return LogRecord.from_list([self.get_var(fld_name).get(parent=self)
-                                    for fld_name in LogRecord.__fields__])
+        # return LogRecord.from_list([self.get_var(fld_name).get(parent=self)
+        #                             for fld_name in LogRecord.__fields__])
+        values = []
+        for fld_name in LogRecord.__fields__:
+            var = self.get_var(fld_name)
+            if fld_name.startswith('label'):
+                # values.append(var.get(parent=self))
+                values.append(var.get())
+            else:
+                values.append(var.get())
+        return LogRecord.from_list(values)
 
     def on_select(self, event):
         selected_lines = self.log_list.curselection()
