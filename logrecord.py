@@ -37,6 +37,9 @@ class LogRecord(BaseModel):
                 opt[label_caption] = label_text
         return cls(**opt)
 
+    def as_list(self):
+        return list(self.__dict__.values())
+
     def __str__(self):
         '''Return Listbox line at "as it is"'''
 
