@@ -3,6 +3,7 @@
 # PYTHON_ARGCOMPLETE_OK
 import tkinter as tk
 from tkinter import ttk
+from logrecord import LogRecord
 
 
 class ScrolledTreeview(ttk.Treeview):
@@ -22,6 +23,11 @@ class ScrolledTreeview(ttk.Treeview):
             setattr(self, m, getattr(box, m))
         self.set_columns()
 
+    def insert_log(self, log: LogRecord) -> str:
+        # iid = 'I001'
+        iid = self.insert("", tk.END, text="1", values=log.as_list()[1:])
+        print(f'{iid = }')
+
     def set_columns(self):
         try:
             flds = list(LogRecord.__fields__)
@@ -32,9 +38,6 @@ class ScrolledTreeview(ttk.Treeview):
         self.heading("#0", text=flds[0])
         for f in flds[1:]:
             self.heading(f, text=f)
-        self.insert(
-            "",
-            tk.END,
-            text="1",
-            values=('2024-03-19 20:49', 'pee', None, None, 123, 'a note')
-        )
+        log = LogRecord.from_list((1, '2024-03-19 20:49', 'pee', '', '', 123,
+                                   'a note'))
+        self.insert_log(log)
