@@ -10,7 +10,8 @@ import argcomplete
 import tkinter as tk
 from tkinter import ttk         # noqa
 from tkinter.messagebox import askyesno
-from scrolled_listbox import ScrolledListbox
+# from scrolled_listbox import ScrolledListbox
+from scrolled_treeview import ScrolledTreeview
 from time4 import Time4, Time4Var
 from combo_db import ComboDb, ComboVar
 from logrecord import LogRecord
@@ -60,8 +61,10 @@ class LogViewer(tk.Tk):
         self.db_con = con
         con.app = self          # use case: askyesno(parent=con.app,...
         self.form_vars = {}
-        log_list = ScrolledListbox(self, selectmode=tk.SINGLE, width=60,
-                                   height=25, font=('Courier', 12))
+        log_list = ScrolledTreeview(self, columns=('id', 'stamp', 'label',
+                                                   'volume', 'note'))
+        # log_list = ScrolledListbox(self, selectmode=tk.SINGLE, width=60,
+        #                            height=25, font=('Courier', 12))
         self.columnconfigure(0, weight=1)
         self.rowconfigure(0, weight=1)
         log_list.grid(column=0, row=0, sticky=tk.NSEW)
@@ -116,9 +119,9 @@ class LogViewer(tk.Tk):
 
         clear the list, read all db records, insert them into the list"""
 
-        self.log_list.delete(0, tk.END)
-        for log in self.db_con.read_logs():
-            self.log_list.insert(tk.END, str(log))
+        # self.log_list.delete(0, tk.END)
+        # for log in self.db_con.read_logs():
+        #     self.log_list.insert(tk.END, str(log))
 
     def get_var(self, fld_name):
         """Return tk.StringVar "form variable" named FLD_NAME
