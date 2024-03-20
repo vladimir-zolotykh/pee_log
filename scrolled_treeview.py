@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 # PYTHON_ARGCOMPLETE_OK
+from datetime import datetime
 import tkinter as tk
 from tkinter import ttk
 from logrecord import LogRecord
-
 
 class ScrolledTreeview(ttk.Treeview):
     def __init__(self, parent, **kwds):
@@ -23,10 +23,20 @@ class ScrolledTreeview(ttk.Treeview):
             setattr(self, m, getattr(box, m))
         self.set_columns()
 
+    @staticmethod
+    def get_annotated_column_width(field):
+        typ = LogRecord.__annotations__[field]
+        if field == 'note':
+            return 30
+        try:
+            return {int: 5, str: 10, datetime: 18}[typ]
+        except KeyError:
+            raise ValueError('Invalid LogRecord field width is requested')
+
     def insert_log(self, log: LogRecord) -> str:
-        # iid = 'I001'
-        iid = self.insert("", tk.END, text="1", values=log.as_list()[1:])
-        print(f'{iid = }')
+        values = log.as_list()
+        iid = self.insert("", tk.END, text=values[0], values=values[1:])
+        return iid              # e.g., 'I001'
 
     def set_columns(self):
         try:
@@ -36,8 +46,13 @@ class ScrolledTreeview(ttk.Treeview):
                     'note']
         self.configure(columns=flds[1:])
         self.heading("#0", text=flds[0])
+        w = 5 * 8
+        self.column("#0", minwidth=w, width=w)
         for f in flds[1:]:
             self.heading(f, text=f)
+            w = self.get_annotated_column_width(f)
+            w *= 8
+            self.column(f, minwidth=w, width=w)
         log = LogRecord.from_list((1, '2024-03-19 20:49', 'pee', '', '', 123,
                                    'a note'))
         self.insert_log(log)
