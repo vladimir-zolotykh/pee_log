@@ -39,7 +39,7 @@ class Event(Base):              # former "Address"
     __tablename__ = "events"
 
     id: Mapped[int] = mapped_column(primary_key=True)
-    text: Mapped[str]
+    text: Mapped[str] = mapped_column(unique=True)
     logged_id: Mapped[int] = mapped_column(ForeignKey("log_records.id"))
     logged: Mapped["Logged"] = relationship(back_populates="events")
 
@@ -47,21 +47,22 @@ class Event(Base):              # former "Address"
         return f"Event(id={self.id!r}, text={self.text!r})"
 
 
-# engine = create_engine("sqlite://", echo=True)
-engine = create_engine('sqlite:///pee_diary_al.db', echo=True)
-# Base.metadata.create_all(engine)
+if __name__ == '__main__':
+    engine = create_engine("sqlite://", echo=True)
+    # engine = create_engine('sqlite:///pee_diary_al.db', echo=True)
+    Base.metadata.create_all(engine)
 
-with Session(engine) as session:
-    pee, creatine = Event(text='pee'), Event(text='Creatine')
-    r1 = Logged(time='2024-01-26 12:24:00', volume=357)
-    r1.events.append(pee)
-    r2 = Logged(time='2024-01-26 13:00:00', volume=439)
-    r2.events.extend([pee, creatine])
-    # r2.events.append(pee)
-    # r2.events.append(creatine)
-    r3 = Logged()
-    r3 = Logged(time='2024-01-26 23:50:00', volume=0)
-    r3.events.append(pee)
-    session.add_all([r1, r2, r3])
-    session.commit()
-    session.close()
+    with Session(engine) as session:
+        pee, creatine = Event(text='pee'), Event(text='Creatine')
+        r1 = Logged(time='2024-01-26 12:24:00', volume=357)
+        r1.events.append(pee)
+        r2 = Logged(time='2024-01-26 13:00:00', volume=439)
+        r2.events.extend([pee, creatine])
+        # r2.events.append(pee)
+        # r2.events.append(creatine)
+        r3 = Logged()
+        r3 = Logged(time='2024-01-26 23:50:00', volume=0)
+        r3.events.append(pee)
+        session.add_all([r1, r2, r3])
+        session.commit()
+        session.close()
