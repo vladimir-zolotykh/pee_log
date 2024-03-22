@@ -13,9 +13,10 @@ from tkinter.messagebox import askyesno
 # from scrolled_listbox import ScrolledListbox
 from scrolled_treeview import ScrolledTreeview
 from time4 import Time4, Time4Var
-from combo_db import ComboDb, ComboVar
+from combo_db import ComboDb
 from logrecord import LogRecord
 import labeldb
+from sqlalchemy import create_engine
 
 
 class ConnectionDiary(sqlite3.Connection):
@@ -56,10 +57,12 @@ class LogViewer(tk.Tk):
         ('641', '2024-01-26 14:00:00', 'pee', '706', '')
     ]
 
-    def __init__(self, con, *args, **kwargs):
+    # def __init__(self, con, *args, **kwargs):
+    def __init__(self, engine):
         super().__init__()
-        self.db_con = con
-        con.app = self          # use case: askyesno(parent=con.app,...
+        # self.db_con = con
+        self.engine = engine
+        # con.app = self          # use case: askyesno(parent=con.app,...
         self.form_vars = {}
         log_list = ScrolledTreeview(self, columns=('id', 'stamp', 'label',
                                                    'volume', 'note'))
@@ -101,7 +104,7 @@ class LogViewer(tk.Tk):
                 _ = Time4(form, time4variable=var)
                 padx = 1
             elif fld_name.startswith('label'):
-                _ = ComboDb(form, db_con=self.db_con, textvariable=var)
+                _ = ComboDb(form, self.engine, textvariable=var)
                 _.update_values()
                 padx = 2
             else:
@@ -133,7 +136,7 @@ class LogViewer(tk.Tk):
             if fld_name == 'stamp':
                 var = Time4Var()
             elif fld_name.startswith('label'):
-                var = ComboVar(self.db_con)
+                var = tk.StringVar()
             else:
                 var = tk.StringVar()
             self.form_vars[fld_name] = var
@@ -245,12 +248,14 @@ parser = argparse.ArgumentParser(
     description="pee_log db veiwer",
     formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 parser.add_argument('--db', help='Database file (.db)',
-                    default='./pee_diary.db')
+                    default='./pee_diary_al.db')
 
 
 if __name__ == '__main__':
     argcomplete.autocomplete(parser)
     args = parser.parse_args()
-    with sqlite3.connect(args.db, factory=ConnectionDiary) as con:
-        v = LogViewer(con)
-        v.mainloop()
+    # with sqlite3.connect(args.db, factory=ConnectionDiary) as con:
+    #     v = LogViewer(con)
+    #     v.mainloop()
+    v = LogViewer(create_engine(f'sqlite:///{args.db}', echo=True))
+    v.mainloop()
