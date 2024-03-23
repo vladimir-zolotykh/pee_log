@@ -16,7 +16,9 @@ from time4 import Time4, Time4Var
 from combo_db import ComboDb
 from logrecord import LogRecord
 import labeldb
-from sqlalchemy import create_engine
+from sqlalchemy.orm import Session
+from sqlalchemy import create_engine, select
+from apeelog2 import Logged, Event
 
 
 class ConnectionDiary(sqlite3.Connection):
@@ -122,9 +124,24 @@ class LogViewer(tk.Tk):
 
         clear the list, read all db records, insert them into the list"""
 
-        # self.log_list.delete(0, tk.END)
-        # for log in self.db_con.read_logs():
-        #     self.log_list.insert(tk.END, str(log))
+        with Session(self.engine) as session:
+            for rec in session.scalars(select(Logged)):
+                labels = [''] * 3
+                for i in range(3):
+                    try:
+                        t = rec.events[i].text
+                    except IndexError:
+                        t = ''
+                    labels[i] = t
+                log = LogRecord(
+                    id=rec.id,
+                    stamp=rec.time,
+                    label1=labels[0],
+                    label2=labels[1],
+                    label3=labels[2],
+                    volume=rec.volume,
+                    note=rec.note if rec.note else '')
+                self.log_list.insert_log(log)
 
     def get_var(self, fld_name):
         """Return tk.StringVar "form variable" named FLD_NAME

@@ -24,7 +24,7 @@ class Logged(Base):             # former "User"
     id: Mapped[int] = mapped_column(primary_key=True)
     time: Mapped[str]
     volume: Mapped[Optional[int]]
-    note: Mapped[Optional[str]]
+    note: Mapped[Optional[str]] = mapped_column(default='')
 
     events: Mapped[List["Event"]] = relationship(
         back_populates="logged", cascade="all, delete-orphan"

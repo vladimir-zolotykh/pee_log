@@ -39,11 +39,7 @@ class ScrolledTreeview(ttk.Treeview):
         return iid              # e.g., 'I001'
 
     def set_columns(self):
-        try:
-            flds = list(LogRecord.__fields__)
-        except NameError:
-            flds = ['id', 'stamp', 'label1', 'label2', 'label3', 'volume',
-                    'note']
+        flds = list(LogRecord.__fields__)
         self.configure(columns=flds[1:])
         self.heading("#0", text=flds[0])
         w = 5 * 8
