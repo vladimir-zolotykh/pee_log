@@ -271,8 +271,5 @@ parser.add_argument('--db', help='Database file (.db)',
 if __name__ == '__main__':
     argcomplete.autocomplete(parser)
     args = parser.parse_args()
-    # with sqlite3.connect(args.db, factory=ConnectionDiary) as con:
-    #     v = LogViewer(con)
-    #     v.mainloop()
-    v = LogViewer(create_engine(f'sqlite:///{args.db}', echo=True))
+    v = LogViewer(create_engine(f'sqlite:///{args.db}', echo=False))
     v.mainloop()

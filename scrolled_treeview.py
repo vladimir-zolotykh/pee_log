@@ -47,8 +47,5 @@ class ScrolledTreeview(ttk.Treeview):
         for f in flds[1:]:
             self.heading(f, text=f)
             w = self.get_annotated_column_width(f)
-            w *= 8
+            w *= 8              # assuming 1 char is 8 pix
             self.column(f, minwidth=w, width=w)
-        log = LogRecord.from_list((1, '2024-03-19 20:49', 'pee', '', '', 123,
-                                   'a note'))
-        self.insert_log(log)
