@@ -28,7 +28,10 @@ class ScrolledTreeview(ttk.Treeview):
         self.set_columns()
 
     def on_select(self, event):
-        iid = self.selection()[0]  # iid: 'I003'
+        try:
+            iid = self.selection()[0]  # iid: 'I003'
+        except IndexError:
+            return
         log_id = self.item(iid, 'text')
         log = LogRecord.from_list([log_id, *self.item(iid, 'values')])
         self.selected_log = log

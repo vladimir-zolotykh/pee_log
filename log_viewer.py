@@ -19,7 +19,7 @@ import labeldb
 from sqlalchemy.orm import Session
 from sqlalchemy import create_engine, select
 from sqlalchemy import func
-from apeelog2 import Logged
+from apeelog2 import Logged, Event
 
 
 class ConnectionDiary(sqlite3.Connection):
@@ -89,7 +89,7 @@ class LogViewer(tk.Tk):
         form.rowconfigure(row, weight=1)
         buttons_bar.grid(column=0, row=row, columnspan=2, sticky=tk.S)
         update_btn = tk.Button(buttons_bar, text='Update',
-                               command=self.update_log)
+                               command=self.update_log_table)
         update_btn.grid(column=0, row=0)
         self.erase_btn = tk.Button(buttons_bar, text='new',
                                    command=self.make_new)
@@ -129,6 +129,7 @@ class LogViewer(tk.Tk):
 
         clear the list, read all db records, insert them into the list"""
 
+        self.log_list.delete(*self.log_list.get_children(''))
         with Session(self.engine) as session:
             for rec in session.scalars(select(Logged)):
                 labels = [''] * 3
@@ -195,45 +196,40 @@ class LogViewer(tk.Tk):
         """Delete selected log record"""
 
         rec = self.get_logrecord()
-        del_sql = '''
-            DELETE FROM pee_log
-            WHERE id = ?
-        '''
         if askyesno(f"{os.path.basename(__file__)}",
                     f"Delete log id={rec.id}? ",
                     parent=self):
-            self.db_con.execute(del_sql, (rec.id, ))
-        self.update_log_list()
+            with Session(self.engine) as session:
+                delete_me = session.scalar(select(Logged).where(
+                    Logged.id == rec.id))
+                print(f'{delete_me = }')
+                session.delete(delete_me)
+                session.commit()
+            self.update_log_list()
 
-    def update_log(self):
-        '''Update the record or add a new
+    def update_log_table(self, prec: LogRecord) -> None:
+        def make_arec(prec: LogRecord) -> Logged:
+            """Make Logged record from LogRecord
 
-        if ID exists in the db, update the record, otherwise add a new
-        record
-        '''
-        rec = self.get_logrecord()
-        ins_cmd = """
-            INSERT INTO pee_log (
-                pee_time, label1_id, label2_id, label3_id, volume, note
-            )
-            VALUES (?, ?, ?, ?, ?, ?)
-        """
-        upd_cmd = """
-            UPDATE pee_log
-            SET pee_time = ?,
-                label1_id = ?, label2_id = ?, label3_id = ?,
-                volume = ?, note = ?
-            WHERE id = ?
-        """
-        try:
-            # self.db_con.execute(ins_cmd, list(rec.dict().values()))
-            self.db_con.execute(ins_cmd, rec.replace_label_with_id(self)[1:])
-        except sqlite3.IntegrityError:
-            if askyesno(f"{os.path.basename(__file__)}",
-                        f"Log {rec.id} exists. Update? ",
-                        parent=self):
-                _values = list(rec.dict().values())
-                self.db_con.execute(upd_cmd, _values[1:] + _values[:1])
+            and return it"""
+            arec = Logged(id=prec.id, time=prec.stamp, volume=prec.volume,
+                          note=prec.note)
+            arec.events.extend([Event(text=getattr(prec, label_caption))
+                                for label_caption in range(1, 4)])
+            return arec
+
+        with Session(self.engine) as session:
+            arec = session.get(Logged, prec.id)
+            arec_new = make_arec(prec)
+            if arec:
+                if not askyesno(f"{os.path.basename(__file__)}",
+                                f"Log {prec.id} exists. Update? ",
+                                parent=self):
+                    return
+            else:
+                pass
+            session.add(arec_new)
+            session.commit()
         self.update_log_list()
 
     def update_fields(self, log_rec: LogRecord) -> None:
