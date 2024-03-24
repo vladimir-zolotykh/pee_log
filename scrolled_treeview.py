@@ -6,8 +6,11 @@ import tkinter as tk
 from tkinter import ttk
 from logrecord import LogRecord
 
+
 class ScrolledTreeview(ttk.Treeview):
     def __init__(self, parent, **kwds):
+        # self.selected_log: selected record converted to LogRecord
+        self.selected_log: LogRecord = None
         box = tk.Frame(parent)
         box.grid(column=0, row=0, sticky=tk.NSEW)
         box.columnconfigure(0, weight=1)
@@ -21,7 +24,14 @@ class ScrolledTreeview(ttk.Treeview):
         self.grid(column=0, row=0, sticky=tk.NSEW)
         for m in ('grid', 'grid_configure', 'grid_forget'):
             setattr(self, m, getattr(box, m))
+        self.bind('<<TreeviewSelect>>', self.on_select)
         self.set_columns()
+
+    def on_select(self, event):
+        iid = self.selection()[0]  # iid: 'I003'
+        log_id = self.item(iid, 'text')
+        log = LogRecord.from_list([log_id, *self.item(iid, 'values')])
+        self.selected_log = log
 
     @staticmethod
     def get_annotated_column_width(field):

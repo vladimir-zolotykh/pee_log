@@ -18,7 +18,7 @@ from logrecord import LogRecord
 import labeldb
 from sqlalchemy.orm import Session
 from sqlalchemy import create_engine, select
-from apeelog2 import Logged, Event
+from apeelog2 import Logged
 
 
 class ConnectionDiary(sqlite3.Connection):
@@ -66,14 +66,18 @@ class LogViewer(tk.Tk):
         self.engine = engine
         # con.app = self          # use case: askyesno(parent=con.app,...
         self.form_vars = {}
+        # Better not to mention data structure type in a variable name
         log_list = ScrolledTreeview(self, columns=('id', 'stamp', 'label',
-                                                   'volume', 'note'))
+                                                   'volume', 'note'),
+                                    selectmode='browse')
         # log_list = ScrolledListbox(self, selectmode=tk.SINGLE, width=60,
         #                            height=25, font=('Courier', 12))
         self.columnconfigure(0, weight=1)
         self.rowconfigure(0, weight=1)
         log_list.grid(column=0, row=0, sticky=tk.NSEW)
-        log_list.bind('<<ListboxSelect>>', self.on_select)
+        # .bind: two handlers are called: ScrolledTreeview.on_select,
+        # then LogViewer.on_treeview_select
+        log_list.bind('<<TreeviewSelect>>', self.on_treeview_select, add='+')
         self.log_list = log_list
         self.update_log_list()
         form = tk.Frame(self)
@@ -232,8 +236,10 @@ class LogViewer(tk.Tk):
                 self.db_con.execute(upd_cmd, _values[1:] + _values[:1])
         self.update_log_list()
 
-    def update_fields(self, log_rec: LogRecord):
-        for row, fld_name in enumerate(LogRecord.__fields__):
+    def update_fields(self, log_rec: LogRecord) -> None:
+        """Update form Entry values"""
+
+        for fld_name in LogRecord.__fields__:
             self.set_val(fld_name, getattr(log_rec, fld_name))
 
     def get_logrecord(self) -> LogRecord:
@@ -251,13 +257,10 @@ class LogViewer(tk.Tk):
                 values.append(var.get())
         return LogRecord.from_list(values)
 
-    def on_select(self, event):
-        selected_lines = self.log_list.curselection()
-        if bool(selected_lines):  # ensure selected_lines tuple is not empty
-            index = selected_lines[0]
-            item = self.log_list.get(index)
-            rec = LogRecord.from_list(item.split('|'))
-            self.update_fields(rec)
+    def on_treeview_select(self, event):
+        log = self.log_list.selected_log
+        if log:
+            self.update_fields(log)
             self.del_btn.config(state=tk.NORMAL)
 
 
