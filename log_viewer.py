@@ -18,6 +18,7 @@ from logrecord import LogRecord
 import labeldb
 from sqlalchemy.orm import Session
 from sqlalchemy import create_engine, select
+from sqlalchemy import func
 from apeelog2 import Logged
 
 
@@ -176,10 +177,9 @@ class LogViewer(tk.Tk):
 
         for fld_name, var in self.form_vars.items():
             if fld_name == 'id':
-                # var.set(str(self.db_con.execute(max_sql).fetchone()[0]))
-                sql = 'SELECT MAX(id) FROM pee_log'
-                id = con.execute(sql).fetchone()[0]
-                var.set(str(id) if isinstance(id, int) else '1')
+                with Session(self.engine) as session:
+                    id = session.query(func.max(Logged.id)).scalar()
+                var.set(str(id + 1) if isinstance(id, int) else '1')
             elif fld_name == 'stamp':
                 dt = datetime.now()
                 var.set(dt)
