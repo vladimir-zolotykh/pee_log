@@ -8,3 +8,4 @@ __pycache__/
 .emacs.desktop
 .emacs.desktop.lock
 pee_diary.db-journal
+pee_diary_al.db
