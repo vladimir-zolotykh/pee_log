@@ -89,7 +89,7 @@ class LogViewer(tk.Tk):
         form.rowconfigure(row, weight=1)
         buttons_bar.grid(column=0, row=row, columnspan=2, sticky=tk.S)
         update_btn = tk.Button(buttons_bar, text='Update',
-                               command=self.update_log_table)
+                               command=self.update_log)
         update_btn.grid(column=0, row=0)
         self.erase_btn = tk.Button(buttons_bar, text='new',
                                    command=self.make_new)
@@ -207,28 +207,41 @@ class LogViewer(tk.Tk):
                 session.commit()
             self.update_log_list()
 
-    def update_log_table(self, prec: LogRecord) -> None:
-        def make_arec(prec: LogRecord) -> Logged:
+    def update_log(self) -> None:
+        def get_event(session: Session, event_name: str) -> Event:
+            with Session(self.engine) as session:
+                event = session.scalar(select(Event).where(
+                    Event.text == event_name))
+                if not event:
+                    event = Event(text=event_name)
+                    session.add(event)
+                    session.commit()
+                return event
+
+        def make_arec(session: Session, prec: LogRecord) -> Logged:
             """Make Logged record from LogRecord
 
-            and return it"""
+            and return it. LogRecord is pydantic class, Logged is
+            SQLAlchemy class"""
+
             arec = Logged(id=prec.id, time=prec.stamp, volume=prec.volume,
                           note=prec.note)
-            arec.events.extend([Event(text=getattr(prec, label_caption))
-                                for label_caption in range(1, 4)])
+            arec.events.extend(
+                (get_event(session, getattr(prec, label_caption))
+                 for label_caption in (f'label{n}' for n in range(1, 4))))
             return arec
 
+        prec = self.get_logrecord()
         with Session(self.engine) as session:
             arec = session.get(Logged, prec.id)
-            arec_new = make_arec(prec)
             if arec:
-                if not askyesno(f"{os.path.basename(__file__)}",
-                                f"Log {prec.id} exists. Update? ",
-                                parent=self):
+                if askyesno(f"{os.path.basename(__file__)}",
+                            f"Log {prec.id} exists. Update? ",
+                            parent=self):
+                    pass
+                else:
                     return
-            else:
-                pass
-            session.add(arec_new)
+            session.add(make_arec(session, prec))
             session.commit()
         self.update_log_list()
 
