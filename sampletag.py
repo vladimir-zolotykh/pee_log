@@ -2,8 +2,9 @@
 # -*- coding: utf-8 -*-
 # PYTHON_ARGCOMPLETE_OK
 from sqlalchemy import Column, Integer, String, ForeignKey, Table, \
-    create_engine, select
-from sqlalchemy.orm import declarative_base, relationship, sessionmaker
+    create_engine, select, func  # noqa
+from sqlalchemy.orm import declarative_base, relationship, Session, \
+    sessionmaker
 import argparse
 import argcomplete
 Base = declarative_base()

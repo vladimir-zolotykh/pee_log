@@ -16,9 +16,10 @@ from time4 import Time4, Time4Var
 from combo_db import ComboDb
 from logrecord import LogRecord
 import labeldb
-from sqlalchemy.orm import Session
-from sqlalchemy import create_engine, select
-from sqlalchemy import func
+# from sqlalchemy.orm import Session
+# from sqlalchemy import create_engine, select
+# from sqlalchemy import func
+import sampletag as SA
 from apeelog2 import Logged, Event
 
 
@@ -130,12 +131,13 @@ class LogViewer(tk.Tk):
         clear the list, read all db records, insert them into the list"""
 
         self.log_list.delete(*self.log_list.get_children(''))
-        with Session(self.engine) as session:
-            for rec in session.scalars(select(Logged)):
+        Session = SA.sessionmaker(self.engine)
+        with Session() as session:
+            for rec in session.scalars(SA.select(SA.Sample)):
                 labels = [''] * 3
                 for i in range(3):
                     try:
-                        t = rec.events[i].text
+                        t = rec.tags[i].text
                     except IndexError:
                         t = ''
                     labels[i] = t
@@ -146,7 +148,7 @@ class LogViewer(tk.Tk):
                     label2=labels[1],
                     label3=labels[2],
                     volume=rec.volume,
-                    note=rec.note if rec.note else '')
+                    note=rec.text if rec.text else '')
                 self.log_list.insert_log(log)
 
     def get_var(self, fld_name):
@@ -178,8 +180,9 @@ class LogViewer(tk.Tk):
 
         for fld_name, var in self.form_vars.items():
             if fld_name == 'id':
-                with Session(self.engine) as session:
-                    id = session.query(func.max(Logged.id)).scalar()
+                Session = SA.sessionmaker(self.engine)
+                with Session() as session:
+                    id = session.query(SA.func.max(SA.Sample.id)).scalar()
                 var.set(str(id + 1) if isinstance(id, int) else '1')
             elif fld_name == 'stamp':
                 dt = datetime.now()
@@ -199,8 +202,9 @@ class LogViewer(tk.Tk):
         if askyesno(f"{os.path.basename(__file__)}",
                     f"Delete log id={rec.id}? ",
                     parent=self):
-            with Session(self.engine) as session:
-                delete_me = session.scalar(select(Logged).where(
+            Session = SA.sessionmaker(self.engine)
+            with Session() as session:
+                delete_me = session.scalar(SA.select(Logged).where(
                     Logged.id == rec.id))
                 print(f'{delete_me = }')
                 session.delete(delete_me)
@@ -208,40 +212,40 @@ class LogViewer(tk.Tk):
             self.update_log_list()
 
     def update_log(self) -> None:
-        def get_event(session: Session, event_name: str) -> Event:
-            with Session(self.engine) as session:
-                event = session.scalar(select(Event).where(
-                    Event.text == event_name))
-                if not event:
-                    event = Event(text=event_name)
-                    session.add(event)
-                    session.commit()
-                return event
+        def get_or_make_tag(session: SA.Session, tag_text: str) -> SA.Tag:
+            tag = session.scalar(SA.select(SA.Tag).where(
+                SA.Tag.text == tag_text))
+            if not tag:
+                tag = SA.Tag(text=tag_text)
+                session.add(tag)
+                session.commit()
+            return tag
 
-        def make_arec(session: Session, prec: LogRecord) -> Logged:
+        def make_sample(session: SA.Session, rec: LogRecord) -> SA.Sample:
             """Make Logged record from LogRecord
 
             and return it. LogRecord is pydantic class, Logged is
             SQLAlchemy class"""
 
-            arec = Logged(id=prec.id, time=prec.stamp, volume=prec.volume,
-                          note=prec.note)
-            arec.events.extend(
-                (get_event(session, getattr(prec, label_caption))
+            sample = SA.Sample(id=rec.id, time=rec.stamp, volume=rec.volume,
+                               text=rec.note)
+            sample.tags.extend(
+                (get_or_make_tag(session, getattr(rec, label_caption))
                  for label_caption in (f'label{n}' for n in range(1, 4))))
-            return arec
+            return sample
 
-        prec = self.get_logrecord()
-        with Session(self.engine) as session:
-            arec = session.get(Logged, prec.id)
-            if arec:
+        rec = self.get_logrecord()
+        Session = SA.sessionmaker(self.engine)
+        with Session() as session:
+            sample = session.get(SA.Sample, rec.id)
+            if sample:
                 if askyesno(f"{os.path.basename(__file__)}",
-                            f"Log {prec.id} exists. Update? ",
+                            f"Log {rec.id} exists. Update? ",
                             parent=self):
                     pass
                 else:
                     return
-            session.add(make_arec(session, prec))
+            session.add(make_sample(session, rec))
             session.commit()
         self.update_log_list()
 
@@ -277,11 +281,13 @@ parser = argparse.ArgumentParser(
     description="pee_log db veiwer",
     formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 parser.add_argument('--db', help='Database file (.db)',
-                    default='./pee_diary_al.db')
+                    default='./sampletag.db')
+parser.add_argument('--echo', action='store_true', default=False,
+                    help='Print emitted SQL commands')
 
 
 if __name__ == '__main__':
     argcomplete.autocomplete(parser)
     args = parser.parse_args()
-    v = LogViewer(create_engine(f'sqlite:///{args.db}', echo=False))
+    v = LogViewer(SA.create_engine(f'sqlite:///{args.db}', echo=args.echo))
     v.mainloop()
