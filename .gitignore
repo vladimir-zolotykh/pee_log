@@ -1,11 +1,7 @@
-pee_log.db
-log_db.db
-pee_diary.db
 LOG_XML/
 *.txt~
 *.py~
 __pycache__/
 .emacs.desktop
 .emacs.desktop.lock
-pee_diary.db-journal
-pee_diary_al.db
+sampletag.db
