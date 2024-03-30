@@ -45,6 +45,8 @@ parser = argparse.ArgumentParser(
     description='Initialize/print sampletag.db',
     formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 parser.add_argument('command', type=str, choices=('init', 'print'))
+parser.add_argument('--echo', action='store_true', default=False,
+                    help='Print emitted SQL commands')
 
 
 def initialize(engine):
@@ -72,7 +74,7 @@ def print_tables(engine):
 if __name__ == '__main__':
     argcomplete.autocomplete(parser)
     args = parser.parse_args()
-    engine = create_engine('sqlite:///sampletag.db', echo=False)
+    engine = create_engine('sqlite:///sampletag.db', echo=args.echo)
     if args.command == 'init':
         initialize(engine)
     elif args.command == 'print':
