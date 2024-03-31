@@ -3,6 +3,7 @@
 # PYTHON_ARGCOMPLETE_OK
 # from dataclasses import dataclass
 import os
+from typing import Optional
 from datetime import datetime
 import sqlite3
 import argparse
@@ -20,7 +21,7 @@ import labeldb
 # from sqlalchemy import create_engine, select
 # from sqlalchemy import func
 import sampletag as SA
-from apeelog2 import Logged, Event
+# from apeelog2 import Logged, Event
 
 
 class ConnectionDiary(sqlite3.Connection):
@@ -204,22 +205,27 @@ class LogViewer(tk.Tk):
                     parent=self):
             Session = SA.sessionmaker(self.engine)
             with Session() as session:
-                delete_me = session.scalar(SA.select(Logged).where(
-                    Logged.id == rec.id))
-                print(f'{delete_me = }')
+                delete_me = session.scalar(SA.select(SA.Sample).where(
+                    SA.Sample.id == rec.id))
                 session.delete(delete_me)
                 session.commit()
             self.update_log_list()
 
     def update_log(self) -> None:
-        def get_or_make_tag(session: SA.Session, tag_text: str) -> SA.Tag:
-            tag = session.scalar(SA.select(SA.Tag).where(
-                SA.Tag.text == tag_text))
-            if not tag:
-                tag = SA.Tag(text=tag_text)
-                session.add(tag)
-                session.commit()
-            return tag
+        def get_or_make_tag(
+                session: SA.Session,
+                tag_text: str
+        ) -> Optional[SA.Tag]:
+            if tag_text:
+                tag = session.scalar(SA.select(SA.Tag).where(
+                    SA.Tag.text == tag_text))
+                if not tag:
+                    tag = SA.Tag(text=tag_text)
+                    session.add(tag)
+                    session.commit()
+                return tag
+            else:
+                return None
 
         def make_sample(session: SA.Session, rec: LogRecord) -> SA.Sample:
             """Make Logged record from LogRecord
@@ -229,9 +235,12 @@ class LogViewer(tk.Tk):
 
             sample = SA.Sample(id=rec.id, time=rec.stamp, volume=rec.volume,
                                text=rec.note)
-            sample.tags.extend(
-                (get_or_make_tag(session, getattr(rec, label_caption))
-                 for label_caption in (f'label{n}' for n in range(1, 4))))
+            tags = []
+            for label_caption in (f'label{n}' for n in range(1, 4)):
+                tag_text = getattr(rec, label_caption)
+                if tag_text:
+                    tags.append(get_or_make_tag(session, tag_text))
+            sample.tags.extend(tags)
             return sample
 
         rec = self.get_logrecord()
