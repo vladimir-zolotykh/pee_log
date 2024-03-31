@@ -3,8 +3,8 @@
 # PYTHON_ARGCOMPLETE_OK
 from sqlalchemy import Column, Integer, String, ForeignKey, Table, \
     create_engine, select, func  # noqa
-from sqlalchemy.orm import declarative_base, relationship, Session, \
-    sessionmaker
+from sqlalchemy.orm import declarative_base, relationship, \
+    sessionmaker, Session       # noqa
 import argparse
 import argcomplete
 Base = declarative_base()
@@ -23,7 +23,8 @@ class Sample(Base):
     time = Column(String)
     volume = Column(Integer)
     text = Column(String)
-    tags = relationship('Tag', secondary=sample_tag, back_populates='samples')
+    tags = relationship('Tag', secondary=sample_tag, back_populates='samples',
+                        cascade='all, delete')
 
     def __repr__(self) -> str:
         return (f'Samples(id={self.id!r}, time={self.time!r}, '
@@ -57,11 +58,13 @@ def initialize(engine):
     creatine = Tag(text='creatine')
     s1 = Sample(time='2024-03-28 19:00:15', volume=123)
     s2 = Sample(time='2024-03-29 20:00:20', volume=456)
+    s3 = Sample(time='2024-03-31 18:15:00', volume=789)
     s1.tags.extend((pee, creatine))
     s2.tags.append(stool)
+    s3.tags.append(pee)
     Session = sessionmaker(engine)
     with Session() as session:
-        session.add_all(s1, s2)
+        session.add_all((s1, s2))
         session.commit()
 
 
