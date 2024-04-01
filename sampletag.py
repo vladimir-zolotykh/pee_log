@@ -9,6 +9,7 @@ from sqlalchemy.orm import declarative_base, relationship, \
     sessionmaker, Session       # noqa
 import argparse
 import argcomplete
+import test_log
 Base = declarative_base()
 
 
@@ -65,7 +66,7 @@ parser_test = subparsers.add_parser(
 parser_test.add_argument(
     'logfile', nargs='+',
     help='The .txt file (e.g., LOG_DIARY/2024-03-15.txt)')
-parser_test.set_defaults(func=_test)
+parser_test.set_defaults(func=test_log.test_log)
 parser_add = subparsers.add_parser('add', help='Add logfile(s) to the DB')
 parser_add.add_argument(
     'logfile', nargs='+',
@@ -103,12 +104,12 @@ def print_tables(engine):
 if __name__ == '__main__':
     argcomplete.autocomplete(parser)
     args = parser.parse_args()
-    print(f'{args = }')
-    exit(0)
-    engine = create_engine('sqlite:///sampletag.db', echo=args.echo)
-    if args.command == 'init':
-        initialize(engine)
-    elif args.command == 'print':
-        print_tables(engine)
-    else:
-        pass
+    for log in args.logfile:
+        args.func(log)
+    # engine = create_engine('sqlite:///sampletag.db', echo=args.echo)
+    # if args.command == 'init':
+    #     initialize(engine)
+    # elif args.command == 'print':
+    #     print_tables(engine)
+    # else:
+    #     pass
