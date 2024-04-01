@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 # PYTHON_ARGCOMPLETE_OK
+import sys
+from datetime import datetime
 from sqlalchemy import Column, Integer, String, ForeignKey, Table, \
     create_engine, select, func  # noqa
 from sqlalchemy.orm import declarative_base, relationship, \
@@ -43,12 +45,35 @@ class Tag(Base):
         return f'Tag(id={self.id!r}, text=={self.text!r})'
 
 
+def _test():
+    print('TEST')
+
+
 parser = argparse.ArgumentParser(
-    description='Initialize/print sampletag.db',
+    prog='sampletag.py',
+    description='Manage sampletag.db',
     formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-parser.add_argument('command', type=str, choices=('init', 'print'))
-parser.add_argument('--echo', action='store_true', default=False,
-                    help='Print emitted SQL commands')
+parser.add_argument(
+    '--echo', action='store_true', help='Print emitted SQL commands')
+parser.add_argument('--db', default='sampletag.db', help='Database file (DB)')
+subparsers = parser.add_subparsers(
+    description='Manage logging database DB',
+    dest='command', title=f'{sys.argv[0]} commands')
+parser_init = subparsers.add_parser('init', help='Initialize DB')
+parser_test = subparsers.add_parser(
+    'test', help='Test consistency of log file(s)')
+parser_test.add_argument(
+    'logfile', nargs='+',
+    help='The .txt file (e.g., LOG_DIARY/2024-03-15.txt)')
+parser_test.set_defaults(func=_test)
+parser_add = subparsers.add_parser('add', help='Add logfile(s) to the DB')
+parser_add.add_argument(
+    'logfile', nargs='+',
+    help='The .txt file (e.g., LOG_DIARY/2024-03-15.txt)')
+parser_print = subparsers.add_parser(
+    'print', help='Print the "sample" table of the DB')
+parser_print.add_argument(
+    '--day', help='Print all log records of the day', default=datetime.now())
 
 
 def initialize(engine):
@@ -62,14 +87,14 @@ def initialize(engine):
     s1.tags.extend((pee, creatine))
     s2.tags.append(stool)
     s3.tags.append(pee)
-    Session = sessionmaker(engine)
+    Session = sessionmaker(engine)  # noqa
     with Session() as session:
         session.add_all((s1, s2))
         session.commit()
 
 
 def print_tables(engine):
-    Session = sessionmaker(engine)
+    Session = sessionmaker(engine)  # noqa
     with Session() as session:
         for sample in session.scalars(select(Sample)):
             print(sample)
@@ -78,6 +103,8 @@ def print_tables(engine):
 if __name__ == '__main__':
     argcomplete.autocomplete(parser)
     args = parser.parse_args()
+    print(f'{args = }')
+    exit(0)
     engine = create_engine('sqlite:///sampletag.db', echo=args.echo)
     if args.command == 'init':
         initialize(engine)
