@@ -39,3 +39,16 @@ class LogRecord(BaseModel):
 
     def as_list(self):
         return list(self.__dict__.values())
+
+    @property
+    def has_tags(self):
+        caps = (f'label{n}' for n in range(1, 4))
+        return any((getattr(self, cap) != '' for cap in caps))
+
+    @property
+    def has_volume(self):
+        return isinstance(self.volume, int)
+
+    @property
+    def has_note(self):
+        return self.note != ''
