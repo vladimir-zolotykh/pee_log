@@ -3,6 +3,7 @@
 # PYTHON_ARGCOMPLETE_OK
 import sys
 from datetime import datetime
+from functools import partial
 from sqlalchemy import Column, Integer, String, ForeignKey, Table, \
     create_engine, select, func  # noqa
 from sqlalchemy.orm import declarative_base, relationship, \
@@ -10,6 +11,7 @@ from sqlalchemy.orm import declarative_base, relationship, \
 import argparse
 import argcomplete
 import test_log
+from sampletag_re import logrecords_generator
 Base = declarative_base()
 
 
@@ -46,8 +48,15 @@ class Tag(Base):
         return f'Tag(id={self.id!r}, text=={self.text!r})'
 
 
-def _test():
-    print('TEST')
+def add_logfile_records(logfile: str, engine) -> None:
+    for rec in logrecords_generator(logfile):
+        tag1 = Tag(text=rec.label1)
+        s1 = Sample(time=rec.stamp, volume=rec.volume)
+        s1.tags.append(tag1)
+        Session = sessionmaker(engine)  # noqa
+        with Session() as session:
+            session.add(s1)
+            session.commit()
 
 
 parser = argparse.ArgumentParser(
@@ -66,11 +75,13 @@ parser_test = subparsers.add_parser(
 parser_test.add_argument(
     'logfile', nargs='+',
     help='The .txt file (e.g., LOG_DIARY/2024-03-15.txt)')
-parser_test.set_defaults(func=test_log.test_log)
+# parser_test.set_defaults(func=test_logfile)
+parser_test.set_defaults(func=lambda file, ignore: test_log.test_log(file))
 parser_add = subparsers.add_parser('add', help='Add logfile(s) to the DB')
 parser_add.add_argument(
     'logfile', nargs='+',
     help='The .txt file (e.g., LOG_DIARY/2024-03-15.txt)')
+parser_add.set_defaults(func=add_logfile_records)
 parser_print = subparsers.add_parser(
     'print', help='Print the "sample" table of the DB')
 parser_print.add_argument(
@@ -104,12 +115,6 @@ def print_tables(engine):
 if __name__ == '__main__':
     argcomplete.autocomplete(parser)
     args = parser.parse_args()
+    engine = create_engine(f'sqlite:///{args.db}', echo=args.echo)
     for log in args.logfile:
-        args.func(log)
-    # engine = create_engine('sqlite:///sampletag.db', echo=args.echo)
-    # if args.command == 'init':
-    #     initialize(engine)
-    # elif args.command == 'print':
-    #     print_tables(engine)
-    # else:
-    #     pass
+        args.func(log, engine)
