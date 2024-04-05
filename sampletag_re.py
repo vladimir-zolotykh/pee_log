@@ -37,6 +37,7 @@ def parse_date(date_str: str) -> datetime:
 
 
 def parse_sample(sample_str: str, sample_date: datetime) -> LogRecord:
+    # TODO: modify the following re to match "2400" line.
     m = re.match(r'^(?P<time>\d{3,4})\s+(?P<volume>\d+)?(?P<rest>.*)$',
                  sample_str)
     if m:
@@ -65,10 +66,18 @@ def parse_sample(sample_str: str, sample_date: datetime) -> LogRecord:
                         )
         return rec
     else:
-        raise ParseSampleError(sample_str)
+        raise ParseSampleError(f'{sample_str.strip()}: Invalid sample line')
 
 
 def logrecords_generator(logfile: str) -> Generator[LogRecord, Any, None]:
+    def startswithany(line, words=('2400', 'Pira', 'headache', 'benchpress',
+                                   'IMET', 'Мефенаминка', 'Creatine', 'Кофе',
+                                   'душ', 'stool')):
+        for w in words:
+            if line.upper().startswith(w.upper()):
+                return True
+        return False
+
     try:
         fd = open(logfile)
     except FileNotFoundError:
@@ -79,6 +88,10 @@ def logrecords_generator(logfile: str) -> Generator[LogRecord, Any, None]:
             if line_no == 1:
                 log_datetime = parse_date(line_str)
             else:
+                if startswithany(line_str):
+                    print(f'{logfile}-{line_no}: {line_str.strip()} '
+                          f'- Invalid sample')
+                    continue
                 yield parse_sample(line_str, log_datetime)
 
 
