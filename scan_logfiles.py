@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 # PYTHON_ARGCOMPLETE_OK
 import os
+import sys
 import re
 import glob
 import argparse
@@ -12,12 +13,25 @@ from sampletag_re import logrecords_generator
 
 parser = argparse.ArgumentParser(
     prog='scan_logfiles.py',
-    description='''Print logfiles "properties", e.g., has_tags, \
-has_note, has_volume''',
+    description='Scan/operate on logfiles',
     formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 parser.add_argument(
     '--logdir', default='./LOG_DIARY',
     help='The directory with YYYY-MM-DD.txt logfiles')
+subparsers = parser.add_subparsers(
+    # description='Operate on LOG_DIARY dir',
+    dest='command', title=f'{sys.argv[0]} commands')
+parser_2400 = subparsers.add_parser('fix2400', help='Fix 2400 lines')
+parser_2400.add_argument(
+    'logfiles', nargs='+',
+    help='The .txt file (e.g., LOG_DIARY/2024-03-15.txt)')
+parser_scan = subparsers.add_parser(
+    'scan',
+    help='Scan LOG_DIARY; print the requested properties')
+parser_scan.add_argument(
+    'property', nargs='+',
+    choices=['has_tags', 'has_volume', 'has_note'],
+    help='The properties to print')
 
 
 def has_2400(logfile: str, prefix: str = '2400') -> bool:
@@ -34,6 +48,9 @@ def replace_2400(logfile, backup_ext='.bak'):
     with open(logfile) as f:
         lines = f.readlines()
 
+    def ptime4(hhmm: str) -> datetime:
+        return datetime.strptime(hhmm, '%H%M')
+
     def get_time4(index: int) -> datetime:
         m = re.match(r'^(?P<stamp>\d{4}).*$', lines[index])
         if m:
@@ -44,8 +61,14 @@ def replace_2400(logfile, backup_ext='.bak'):
     lines2 = []
     for line_no, line in enumerate(lines):
         if line[:4] == '2400':
-            t1 = get_time4(line_no - 1)
-            t2 = get_time4(line_no + 1)
+            try:
+                t1 = get_time4(line_no - 1)
+            except IndexError:
+                t1 = ptime4('0000')
+            try:
+                t2 = get_time4(line_no + 1)
+            except IndexError:
+                t2 = ptime4('2359')
             mid = (t2 - t1) / 2
             line = datetime.strftime(t1 + mid, '%H%M') + line[4:]
         lines2.append(line)
@@ -57,10 +80,20 @@ def replace_2400(logfile, backup_ext='.bak'):
 if __name__ == '__main__':
     argcomplete.autocomplete(parser)
     args = parser.parse_args()
-    for logname in sorted(glob.glob(os.path.join(args.logdir, '*.txt'))):
-        if has_2400(logname):
-            replace_2400(logname, backup_ext='bak')
-        for rec in logrecords_generator(logname):
-            if rec.has_tags:
-                print(f'{logname}')
-                break
+    if args.command == 'fix2400':
+        # for logname in sorted(glob.glob(os.path.join(args.logdir, '*.txt'))):
+        for logname in args.logfiles:
+            print(f'Patching {logname} ...')
+            if has_2400(logname):
+                replace_2400(logname, backup_ext='bak')
+    elif args.command == 'scan':
+        for logname in sorted(glob.glob(os.path.join(args.logdir, '*.txt'))):
+            def for_rec_prop(logname):
+                '''Iterate over records, properties'''
+
+                for rec in logrecords_generator(logname):
+                    for prop in args.property:
+                        if getattr(rec, prop):
+                            print(f'{logname}')
+                            return
+            for_rec_prop(logname)
