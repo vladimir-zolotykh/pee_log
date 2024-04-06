@@ -41,6 +41,11 @@ class LogRecord(BaseModel):
         return list(self.__dict__.values())
 
     @property
+    def tags_count(self):
+        caps = (f'label{n}' for n in range(1, 4))
+        return sum((1 for cap in caps if getattr(self, cap) != ''))
+
+    @property
     def has_tags(self):
         caps = (f'label{n}' for n in range(1, 4))
         return any((getattr(self, cap) != '' for cap in caps))
