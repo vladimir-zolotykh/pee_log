@@ -6,10 +6,10 @@
 1007
 1130
 1319
-2400 Creatine + Lecithin
+2400 Creatine Lecithin
 1348
 1409
-2400 stool
+1410 stool
 1424
 1440
 1503 135
