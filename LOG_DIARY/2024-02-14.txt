@@ -4,10 +4,10 @@
 0821
 1009
 1120
-Creatine
-Stool
+1120 Creatine
+1120 Stool
 1245
-Piracetam
+1355 Piracetam
 1355
 1427
 1501
