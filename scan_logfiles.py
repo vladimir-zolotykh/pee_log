@@ -21,7 +21,8 @@ parser.add_argument(
 subparsers = parser.add_subparsers(
     # description='Operate on LOG_DIARY dir',
     dest='command', title=f'{sys.argv[0]} commands')
-parser_2400 = subparsers.add_parser('fix2400', help='Fix 2400 lines')
+parser_2400 = subparsers.add_parser(
+    'fix2400', help='Replace 2400 with the valid time stamp')
 parser_2400.add_argument(
     'logfiles', nargs='+',
     help='The .txt file (e.g., LOG_DIARY/2024-03-15.txt)')
@@ -62,6 +63,7 @@ def replace_2400(logfile, backup_ext='.bak'):
             raise ValueError(f'{line[index]}: Invalide sample')
 
     lines2 = []
+    num_lines_changed = 0
     for line_no, line in enumerate(lines):
         if line[:4] == '2400':
             try:
@@ -74,10 +76,13 @@ def replace_2400(logfile, backup_ext='.bak'):
                 t2 = ptime4('2359')
             mid = (t2 - t1) / 2
             line = datetime.strftime(t1 + mid, '%H%M') + line[4:]
+            num_lines_changed += 1
         lines2.append(line)
 
-    with open(logfile, 'w') as f:
-        f.writelines(lines2)
+    if 0 < num_lines_changed:
+        print(f'"{logfile}" modified, .bak file created')
+        with open(logfile, 'w') as f:
+            f.writelines(lines2)
 
 
 if __name__ == '__main__':
@@ -86,9 +91,8 @@ if __name__ == '__main__':
     if args.command == 'fix2400':
         # for logname in sorted(glob.glob(os.path.join(args.logdir, '*.txt'))):
         for logname in args.logfiles:
-            print(f'Patching {logname} ...')
             if has_2400(logname):
-                replace_2400(logname, backup_ext='bak')
+                replace_2400(logname, backup_ext='.bak')
     elif args.command == 'scan':
         for logname in sorted(glob.glob(os.path.join(args.logdir, '*.txt'))):
             def for_rec_prop(logname):
