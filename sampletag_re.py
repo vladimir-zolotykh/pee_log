@@ -56,14 +56,14 @@ def parse_sample(sample_str: str, sample_date: datetime) -> LogRecord:
                 label_text[n] = tags.pop(0)
             except IndexError:
                 break
-        rec = LogRecord(id=1,
-                        stamp=stamp_str,
-                        label1=label_text[0],
-                        label2=label_text[1],
-                        label3=label_text[2],
-                        volume=0,
-                        # volume=m.group('volume') if m.group('volume') else 0
-                        )
+        try:
+            volume = int(m.group('volume'))
+        except TypeError:
+            volume = 0
+        rec = LogRecord(
+            id=1, stamp=stamp_str,
+            label1=label_text[0], label2=label_text[1], label3=label_text[2],
+            volume=volume)
         return rec
     else:
         raise ParseSampleError(f'{sample_str.strip()}: Invalid sample line')
@@ -85,6 +85,9 @@ def logrecords_generator(logfile: str) -> Generator[LogRecord, Any, None]:
         fd = open(logfile)
     with fd:
         for line_no, line_str in enumerate(fd, 1):
+            # skip empty lines
+            if line_str == '\n':
+                continue
             if line_no == 1:
                 log_datetime = parse_date(line_str)
             else:
