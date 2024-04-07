@@ -30,8 +30,11 @@ parser_scan = subparsers.add_parser(
     help='Scan LOG_DIARY; print the requested properties')
 parser_scan.add_argument(
     'property', nargs='+',
-    choices=['has_tags', 'has_volume', 'has_note'],
+    choices=['has_tags', 'tags_count', 'has_volume', 'has_note'],
     help='The properties to print')
+parser_scan.add_argument(
+    '--count', type=int, default=1,
+    help='Usage: scan_logfiles scan has_tags --count 2')
 
 
 def has_2400(logfile: str, prefix: str = '2400') -> bool:
@@ -89,10 +92,12 @@ if __name__ == '__main__':
     elif args.command == 'scan':
         for logname in sorted(glob.glob(os.path.join(args.logdir, '*.txt'))):
             def for_rec_prop(logname):
-                '''Iterate over records, properties'''
+                '''Iterate over logfile properties'''
 
                 for rec in logrecords_generator(logname):
                     for prop in args.property:
+                        # if os.path.basename(logname) == '2024-01-23.txt':
+                        #     print(repr(rec))
                         if getattr(rec, prop):
                             print(f'{logname}')
                             return
