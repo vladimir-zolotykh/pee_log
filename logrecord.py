@@ -52,7 +52,7 @@ class LogRecord(BaseModel):
 
     @property
     def has_volume(self):
-        return isinstance(self.volume, int)
+        return isinstance(self.volume, int) and 0 < self.volume
 
     @property
     def has_note(self):
