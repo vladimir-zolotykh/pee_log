@@ -92,7 +92,7 @@ def logrecords_generator(logfile: str) -> Generator[LogRecord, Any, None]:
                 log_datetime = parse_date(line_str)
             else:
                 if startswithany(line_str):
-                    print(f'{logfile}-{line_no}: {line_str.strip()} '
+                    print(f'"{logfile}" at line {line_no:2d}: {line_str.strip()} '
                           f'- Invalid sample')
                     continue
                 yield parse_sample(line_str, log_datetime)
