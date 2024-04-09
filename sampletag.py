@@ -3,7 +3,6 @@
 # PYTHON_ARGCOMPLETE_OK
 import sys
 from datetime import datetime
-from functools import partial
 from sqlalchemy import Column, Integer, String, ForeignKey, Table, \
     create_engine, select, func  # noqa
 from sqlalchemy.orm import declarative_base, relationship, \
@@ -69,7 +68,11 @@ parser.add_argument('--db', default='sampletag.db', help='Database file (DB)')
 subparsers = parser.add_subparsers(
     description='Manage logging database DB',
     dest='command', title=f'{sys.argv[0]} commands')
-parser_init = subparsers.add_parser('init', help='Initialize DB')
+parser_init = subparsers.add_parser(
+    'init', help='Initialize DB. Make empty tables')
+parser_del = subparsers.add_parser('del', help='Delete table contents')
+# set_defaults func signature: (logfile: str, engine: Engine)
+parser_del.set_defaults(func=lambda ingnore, engine: empty_tables(engine))
 parser_test = subparsers.add_parser(
     'test', help='Test consistency of log file(s)')
 parser_test.add_argument(
@@ -88,21 +91,38 @@ parser_print.add_argument(
     '--day', help='Print all log records of the day', default=datetime.now())
 
 
+def empty_tables(engine):
+    '''Empty all tables (sample, tag, sample_tag)'''
+
+    Base.metadata.reflect(engine)
+    tables = reversed(Base.metadata.sorted_tables)
+    # table_names = (t.__tablename__ for t in tables)
+    table_names = ('sample_tag', 'tag', 'sample')
+    ans = input(f'The content of the tables {", ".join(table_names)} '
+                f'will be deleted. Are you sure? ')
+    if ans.upper().startswith('Y'):
+        Session = sessionmaker(engine)  # noqa
+        with Session() as session:
+            for table in tables:
+                session.execute(table.delete())
+            session.commit()
+
+
 def initialize(engine):
     Base.metadata.create_all(engine)
-    pee = Tag(text='pee')
-    stool = Tag(text='stool')
-    creatine = Tag(text='creatine')
-    s1 = Sample(time='2024-03-28 19:00:15', volume=123)
-    s2 = Sample(time='2024-03-29 20:00:20', volume=456)
-    s3 = Sample(time='2024-03-31 18:15:00', volume=789)
-    s1.tags.extend((pee, creatine))
-    s2.tags.append(stool)
-    s3.tags.append(pee)
-    Session = sessionmaker(engine)  # noqa
-    with Session() as session:
-        session.add_all((s1, s2))
-        session.commit()
+    # pee = Tag(text='pee')
+    # stool = Tag(text='stool')
+    # creatine = Tag(text='creatine')
+    # s1 = Sample(time='2024-03-28 19:00:15', volume=123)
+    # s2 = Sample(time='2024-03-29 20:00:20', volume=456)
+    # s3 = Sample(time='2024-03-31 18:15:00', volume=789)
+    # s1.tags.extend((pee, creatine))
+    # s2.tags.append(stool)
+    # s3.tags.append(pee)
+    # Session = sessionmaker(engine)  # noqa
+    # with Session() as session:
+    #     session.add_all((s1, s2))
+    #     session.commit()
 
 
 def print_tables(engine):
@@ -116,5 +136,8 @@ if __name__ == '__main__':
     argcomplete.autocomplete(parser)
     args = parser.parse_args()
     engine = create_engine(f'sqlite:///{args.db}', echo=args.echo)
-    for log in args.logfile:
-        args.func(log, engine)
+    if args.command == 'del':
+        args.func('', engine)
+    else:
+        for log in args.logfile:
+            args.func(log, engine)
