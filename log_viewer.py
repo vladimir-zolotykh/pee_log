@@ -21,6 +21,7 @@ import labeldb
 # from sqlalchemy import create_engine, select
 # from sqlalchemy import func
 import sampletag as SA
+from sample_func import add_sample, update_sample
 # from apeelog2 import Logged, Event
 
 
@@ -91,7 +92,7 @@ class LogViewer(tk.Tk):
         form.rowconfigure(row, weight=1)
         buttons_bar.grid(column=0, row=row, columnspan=2, sticky=tk.S)
         update_btn = tk.Button(buttons_bar, text='Update',
-                               command=self.update_log)
+                               command=self.edit_log)
         update_btn.grid(column=0, row=0)
         self.erase_btn = tk.Button(buttons_bar, text='new',
                                    command=self.make_new)
@@ -211,51 +212,26 @@ class LogViewer(tk.Tk):
                 session.commit()
             self.update_log_list()
 
-    def update_log(self) -> None:
-        def get_or_make_tag(
-                session: SA.Session,
-                tag_text: str
-        ) -> Optional[SA.Tag]:
-            if tag_text:
-                tag = session.scalar(SA.select(SA.Tag).where(
-                    SA.Tag.text == tag_text))
-                if not tag:
-                    tag = SA.Tag(text=tag_text)
-                    session.add(tag)
-                    session.commit()
-                return tag
-            else:
-                return None
-
-        def make_sample(session: SA.Session, rec: LogRecord) -> SA.Sample:
-            """Make Logged record from LogRecord
-
-            and return it. LogRecord is pydantic class, Logged is
-            SQLAlchemy class"""
-
-            sample = SA.Sample(id=rec.id, time=rec.stamp, volume=rec.volume,
-                               text=rec.note)
-            tags = []
-            for label_caption in (f'label{n}' for n in range(1, 4)):
-                tag_text = getattr(rec, label_caption)
-                if tag_text:
-                    tags.append(get_or_make_tag(session, tag_text))
-            sample.tags.extend(tags)
-            return sample
+    def edit_log(self) -> None:
+        """Add/update log record (Sample) to "sample" table"""
 
         rec = self.get_logrecord()
-        Session = SA.sessionmaker(self.engine)
-        with Session() as session:
+        with SA.Session(self.engine) as session:
             sample = session.get(SA.Sample, rec.id)
-            if sample:
-                if askyesno(f"{os.path.basename(__file__)}",
-                            f"Log {rec.id} exists. Update? ",
-                            parent=self):
-                    pass
+            try:
+                if sample:
+                    if askyesno(f"{os.path.basename(__file__)}",
+                                f"Log {rec.id} exists. Update? ",
+                                parent=self):
+                        update_sample(session, sample, rec)
                 else:
-                    return
-            session.add(make_sample(session, rec))
-            session.commit()
+                    sample = SA.Sample(id=rec.id, time=rec.stamp,
+                                       volume=rec.volume, text=rec.note)
+                    add_sample(session, sample, rec)
+                session.commit()
+                session.close()
+            except SA.SQLAlchemyError:
+                session.rollback()
         self.update_log_list()
 
     def update_fields(self, log_rec: LogRecord) -> None:

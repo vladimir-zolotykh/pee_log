@@ -7,6 +7,7 @@ from sqlalchemy import Column, Integer, String, ForeignKey, Table, \
     create_engine, select, func  # noqa
 from sqlalchemy.orm import declarative_base, relationship, \
     sessionmaker, Session       # noqa
+from sqlalchemy.exc import SQLAlchemyError
 import argparse
 import argcomplete
 import test_log
