@@ -128,9 +128,9 @@ class LogViewer(tk.Tk):
         return "break"
 
     def update_log_list(self):
-        """Update Listbox (.log_list)
+        """Update Treeview (.log_list)
 
-        clear the list, read all db records, insert them into the list"""
+        delete all view items, read all db records, add them to the view"""
 
         self.log_list.delete(*self.log_list.get_children(''))
         Session = SA.sessionmaker(self.engine)
