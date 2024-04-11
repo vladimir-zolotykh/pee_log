@@ -3,11 +3,12 @@
 # PYTHON_ARGCOMPLETE_OK
 import sys
 from datetime import datetime
+from contextlib import contextmanager
 from sqlalchemy import Column, Integer, String, ForeignKey, Table, \
     create_engine, select, func  # noqa
 from sqlalchemy.orm import declarative_base, relationship, \
     sessionmaker, Session       # noqa
-from sqlalchemy.exc import SQLAlchemyError
+from sqlalchemy.exc import SQLAlchemyError  # noqa
 import argparse
 import argcomplete
 import test_log
@@ -57,6 +58,21 @@ def add_logfile_records(logfile: str, engine) -> None:
         with Session() as session:
             session.add(s1)
             session.commit()
+
+
+@contextmanager
+def session_scope(engine):
+    """Provide a transactional scope around a series of operations"""
+
+    session = Session(engine)
+    try:
+        yield session
+        session.commit()
+    except SQLAlchemyError:
+        session.rollback()
+        raise
+    finally:
+        session.close()
 
 
 parser = argparse.ArgumentParser(

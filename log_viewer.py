@@ -216,22 +216,18 @@ class LogViewer(tk.Tk):
         """Add/update log record (Sample) to "sample" table"""
 
         rec = self.get_logrecord()
-        with SA.Session(self.engine) as session:
+        # with SA.Session(self.engine) as session:
+        with SA.session_scope(self.engine) as session:
             sample = session.get(SA.Sample, rec.id)
-            try:
-                if sample:
-                    if askyesno(f"{os.path.basename(__file__)}",
-                                f"Log {rec.id} exists. Update? ",
-                                parent=self):
-                        update_sample(session, sample, rec)
-                else:
-                    sample = SA.Sample(id=rec.id, time=rec.stamp,
-                                       volume=rec.volume, text=rec.note)
-                    add_sample(session, sample, rec)
-                session.commit()
-                session.close()
-            except SA.SQLAlchemyError:
-                session.rollback()
+            if sample:
+                if askyesno(f"{os.path.basename(__file__)}",
+                            f"Log {rec.id} exists. Update? ",
+                            parent=self):
+                    update_sample(session, sample, rec)
+            else:
+                sample = SA.Sample(id=rec.id, time=rec.stamp,
+                                   volume=rec.volume, text=rec.note)
+                add_sample(session, sample, rec)
         self.update_log_list()
 
     def update_fields(self, log_rec: LogRecord) -> None:
