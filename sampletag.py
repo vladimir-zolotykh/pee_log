@@ -18,8 +18,8 @@ Base = declarative_base()
 
 sample_tag = Table(
     'sample_tag', Base.metadata,
-    Column('sample_id', Integer, ForeignKey('sample.id')),
-    Column('tag_id', Integer, ForeignKey('tag.id'))
+    Column('sample_id', Integer, ForeignKey('sample.id', ondelete='CASCADE')),
+    Column('tag_id', Integer, ForeignKey('tag.id', ondelete='CASCADE'))
 )
 
 
@@ -29,8 +29,10 @@ class Sample(Base):
     time = Column(String)
     volume = Column(Integer)
     text = Column(String)
-    tags = relationship('Tag', secondary=sample_tag, back_populates='samples',
-                        cascade='all, delete')
+    tags = relationship(
+        'Tag', secondary=sample_tag, back_populates='samples',
+        # cascade="all, delete-orphan"
+        cascade='all, delete')
 
     def __repr__(self) -> str:
         return (f'Samples(id={self.id!r}, time={self.time!r}, '
@@ -42,8 +44,9 @@ class Tag(Base):
     __tablename__ = 'tag'
     id = Column(Integer, primary_key=True)
     text = Column(String)
-    samples = relationship('Sample', secondary=sample_tag,
-                           back_populates='tags')
+    samples = relationship(
+        'Sample', secondary=sample_tag,
+        back_populates='tags', passive_deletes=True)
 
     def __repr__(self) -> str:
         return f'Tag(id={self.id!r}, text=={self.text!r})'
