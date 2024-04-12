@@ -223,11 +223,11 @@ class LogViewer(tk.Tk):
                 if askyesno(f"{os.path.basename(__file__)}",
                             f"Log {rec.id} exists. Update? ",
                             parent=self):
-                    update_sample(session, sample, rec)
+                    SA.update_sample(session, sample, rec)
             else:
                 sample = SA.Sample(id=rec.id, time=rec.stamp,
                                    volume=rec.volume, text=rec.note)
-                add_sample(session, sample, rec)
+                SA.add_sample(session, sample, rec)
         self.update_log_list()
 
     def update_fields(self, log_rec: LogRecord) -> None:
