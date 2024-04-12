@@ -4,15 +4,17 @@
 import sys
 from datetime import datetime
 from contextlib import contextmanager
-from sqlalchemy import Column, Integer, String, ForeignKey, Table, \
-    create_engine, select, func  # noqa
-from sqlalchemy.orm import declarative_base, relationship, \
-    sessionmaker, Session       # noqa
-from sqlalchemy.exc import SQLAlchemyError  # noqa
+from typing import List, Optional
+from sqlalchemy import (
+    Column, Integer, String, ForeignKey, Table, create_engine, select)
+from sqlalchemy.orm import (
+    declarative_base, relationship, sessionmaker, Session)
+from sqlalchemy.exc import SQLAlchemyError
 import argparse
 import argcomplete
 import test_log
 from sampletag_re import logrecords_generator
+from logrecord import LogRecord
 Base = declarative_base()
 
 
@@ -52,17 +54,6 @@ class Tag(Base):
         return f'Tag(id={self.id!r}, text=={self.text!r})'
 
 
-def add_logfile_records(logfile: str, engine) -> None:
-    for rec in logrecords_generator(logfile):
-        tag1 = Tag(text=rec.label1)
-        s1 = Sample(time=rec.stamp, volume=rec.volume)
-        s1.tags.append(tag1)
-        Session = sessionmaker(engine)  # noqa
-        with Session() as session:
-            session.add(s1)
-            session.commit()
-
-
 @contextmanager
 def session_scope(engine):
     """Provide a transactional scope around a series of operations"""
@@ -78,6 +69,67 @@ def session_scope(engine):
         session.close()
 
 
+def _get_logrecord_tags(
+        session: Session, rec: LogRecord
+) -> List[Tag]:
+    """For a given LogRecord "rec" return the list of Tags"""
+
+    def get_or_make_tag(
+            session: Session, tag_text: str
+    ) -> Optional[Tag]:
+        """Return the existing or create a new Tag"""
+
+        if tag_text:
+            tag = session.scalar(select(Tag).where(
+                Tag.text == tag_text))
+            if not tag:
+                tag = Tag(text=tag_text)
+                session.add(tag)
+            return tag
+        else:
+            return None
+
+    tags = []
+    for label_caption in (f'label{n}' for n in range(1, 4)):
+        tag_text = getattr(rec, label_caption)
+        if tag_text:
+            tags.append(get_or_make_tag(session, tag_text))
+    return tags
+
+
+def add_sample(
+        session: Session, sample: Sample, rec: LogRecord
+) -> None:
+    """Make a new Sample, add it to the sample table"""
+
+    tags = _get_logrecord_tags(session, rec)
+    sample.tags.extend(tags)
+    session.add(sample)
+
+
+def update_sample(session, sample: Sample, rec: LogRecord) -> None:
+    """Update existing sample"""
+
+    sample.time = rec.stamp
+    sample.volume = rec.volume
+    sample.text = rec.note
+    tags = _get_logrecord_tags(session, rec)
+    sample.tags = tags
+
+
+def add_logfile_records(logfile: str, engine) -> None:
+    """Add LOGFILE records to DB (all records or none)
+
+    Read the record, make the Sample from it, add the Sample to the DB."""
+
+    for rec in logrecords_generator(logfile):
+        with session_scope(engine) as session:
+            tags = _get_logrecord_tags(session, rec)
+            kwds = {'time': rec.stamp, 'volume': rec.volume, 'note': rec.note}
+            sample = Sample(**kwds)
+            sample.tags.extend(tags)
+
+
 parser = argparse.ArgumentParser(
     prog='sampletag.py',
     description='Manage sampletag.db',
@@ -90,7 +142,8 @@ subparsers = parser.add_subparsers(
     dest='command', title=f'{sys.argv[0]} commands')
 parser_init = subparsers.add_parser(
     'init', help='Initialize DB. Make empty tables')
-parser_del = subparsers.add_parser('del', help='Delete table contents')
+parser_del = subparsers.add_parser(
+    'del', help='Delete table contents', aliases=['empty'])
 # set_defaults func signature: (logfile: str, engine: Engine)
 parser_del.set_defaults(func=lambda ingnore, engine: empty_tables(engine))
 parser_test = subparsers.add_parser(
@@ -129,6 +182,10 @@ def empty_tables(engine):
 
 
 def initialize(engine):
+    """Initialize only sample_tag, tag, sample tables
+
+    Do not put any inital content in them."""
+
     Base.metadata.create_all(engine)
     # pee = Tag(text='pee')
     # stool = Tag(text='stool')
@@ -157,7 +214,8 @@ if __name__ == '__main__':
     args = parser.parse_args()
     engine = create_engine(f'sqlite:///{args.db}', echo=args.echo)
     if args.command == 'del':
-        args.func('', engine)
+        args.func('', engine)   # func = empty_tables
     else:
         for log in args.logfile:
+            # func: test_log or add_logfile_records
             args.func(log, engine)
