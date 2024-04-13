@@ -32,10 +32,14 @@ parser_scan = subparsers.add_parser(
 parser_scan.add_argument(
     'property', nargs='+',
     choices=['has_tags', 'tags_count', 'has_volume', 'has_note'],
-    help='The properties to print')
+    help="""
+Usage: scan_logfiles scan has_volume Print the log file names that
+has records with volume field > 0""")
 parser_scan.add_argument(
     '--count', type=int, default=1,
-    help='Usage: scan_logfiles scan has_tags --count 2')
+    help="""
+Usage: scan_logfiles scan has_tags --count 2 Print log file names that
+has records with two tag fields or more""")
 
 
 def has_2400(logfile: str, prefix: str = '2400') -> bool:
@@ -100,9 +104,12 @@ if __name__ == '__main__':
 
                 for rec in logrecords_generator(logname):
                     for prop in args.property:
-                        # if os.path.basename(logname) == '2024-01-23.txt':
-                        #     print(repr(rec))
-                        if getattr(rec, prop):
-                            print(f'{logname}')
-                            return
+                        prop_val = getattr(rec, prop)
+                        if prop == 'tags_count':
+                            if args.count < prop_val:
+                                print(f'{logname}')
+                        else:
+                            if prop_val:
+                                print(f'{logname}')
+                                return
             for_rec_prop(logname)
