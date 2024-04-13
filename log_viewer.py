@@ -21,7 +21,6 @@ import labeldb
 # from sqlalchemy import create_engine, select
 # from sqlalchemy import func
 import sampletag as SA
-from sample_func import add_sample, update_sample
 # from apeelog2 import Logged, Event
 
 

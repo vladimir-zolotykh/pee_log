@@ -100,7 +100,10 @@ def _get_logrecord_tags(
 def add_sample(
         session: Session, sample: Sample, rec: LogRecord
 ) -> None:
-    """Make a new Sample, add it to the sample table"""
+    """Make a new Sample, add it to the "sample" table
+
+    without session.commit() the changes will remain only in
+    memory. Regularly, called within session_scope"""
 
     tags = _get_logrecord_tags(session, rec)
     sample.tags.extend(tags)
@@ -108,7 +111,10 @@ def add_sample(
 
 
 def update_sample(session, sample: Sample, rec: LogRecord) -> None:
-    """Update existing sample"""
+    """Update existing sample
+
+    The function updates Sample in memory. Need session.commit() to
+    "flush" data into the persistent db"""
 
     sample.time = rec.stamp
     sample.volume = rec.volume
