@@ -131,8 +131,9 @@ def add_logfile_records(logfile: str, engine) -> None:
     for rec in logrecords_generator(logfile):
         with session_scope(engine) as session:
             tags = _get_logrecord_tags(session, rec)
-            kwds = {'time': rec.stamp, 'volume': rec.volume, 'note': rec.note}
+            kwds = {'time': rec.stamp, 'volume': rec.volume, 'text': rec.note}
             sample = Sample(**kwds)
+            session.add(sample)
             sample.tags.extend(tags)
 
 
