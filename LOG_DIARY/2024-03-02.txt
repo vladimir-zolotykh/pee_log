@@ -6,7 +6,7 @@
 0927
 1011
 1046
-1122 Mefenamic acid
+1122 Mefenamic_acid
 1218
 1258
 1305
@@ -18,13 +18,13 @@
 1453
 1520
 1544
-1600 Creatine
+1600 Creatine Lecithin
 1624
-2400 душ
+1624 душ
 1703
 1759
 1337
 1929
-2400 Mefenamic acid
+1930 Mefenamic_acid
 2118
 2336
