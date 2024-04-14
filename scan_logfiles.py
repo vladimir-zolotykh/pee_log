@@ -99,19 +99,25 @@ if __name__ == '__main__':
                 replace_2400(logname, backup_ext='.bak')
     elif args.command == 'scan':
         for logname in sorted(glob.glob(os.path.join(args.logdir, '*.txt'))):
-            
-            def print_if_found(logname):
-                '''Iterate over logfile properties'''
+
+            def find_first_prop(logname):
+                '''Return 1st found PROP
+
+                Iterate over logfile records until the first with PROP
+                is found. Return PROP name, value'''
 
                 for rec in logrecords_generator(logname):  # rec_loop
                     for prop in args.property:             # prop_loop
                         prop_val = getattr(rec, prop)
+                        result = prop, prop_val
                         if prop == 'tags_count':
                             if args.count <= prop_val:
-                                print(f'{logname}: tags_count = {prop_val}')
-                                return  # break rec_loop
+                                return result
                         else:
                             if prop_val:
-                                print(f'{logname}: {prop}')
-                                return  # break rec_loop
-            print_if_found(logname)
+                                return result
+            try:
+                prop, prop_val = find_first_prop(logname)
+                print(f'{logname}: {prop}: {prop_val}')
+            except TypeError:
+                pass
