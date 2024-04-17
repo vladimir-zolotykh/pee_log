@@ -37,7 +37,7 @@ class Sample(Base):
         cascade='all, delete')
 
     def __repr__(self) -> str:
-        return (f'Samples(id={self.id!r}, time={self.time!r}, '
+        return (f'Sample(id={self.id!r}, time={self.time!r}, '
                 f'volume={self.volume!r}, text={self.text!r}) '
                 f'tags={self.tags!r}')
 
@@ -169,6 +169,9 @@ parser_print = subparsers.add_parser(
     'print', help='Print the "sample" table of the DB')
 parser_print.add_argument(
     '--day', help='Print all log records of the day', default=datetime.now())
+# print_tables is define later. Withot lambda I'll get
+# NameError: name 'print_tables' is not defined
+parser_print.set_defaults(func=lambda day, engine: print_tables(day, engine))
 
 
 def empty_tables(engine):
@@ -209,7 +212,7 @@ def initialize(engine):
     #     session.commit()
 
 
-def print_tables(engine):
+def print_tables(day, engine):
     Session = sessionmaker(engine)  # noqa
     with Session() as session:
         for sample in session.scalars(select(Sample)):
@@ -222,6 +225,8 @@ if __name__ == '__main__':
     engine = create_engine(f'sqlite:///{args.db}', echo=args.echo)
     if args.command == 'del':
         args.func('', engine)   # func = empty_tables
+    elif args.command == 'print':
+        args.func(args.day, engine)
     else:
         for log in args.logfile:
             # func: test_log or add_logfile_records
