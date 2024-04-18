@@ -238,4 +238,8 @@ if __name__ == '__main__':
     else:
         for log in args.logfile:
             # func: test_log or add_logfile_records
-            args.func(log, engine)
+            try:
+                args.func(log, engine)
+                print(f'"{log}" added successfully')
+            except SQLAlchemyError as err:
+                print(f'"{log}": {err}')
