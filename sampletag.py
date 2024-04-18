@@ -243,3 +243,5 @@ if __name__ == '__main__':
                 print(f'"{log}" added successfully')
             except SQLAlchemyError as err:
                 print(f'"{log}": {err}')
+            finally:
+                sys.stdout.flush()
