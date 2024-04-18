@@ -6,7 +6,8 @@ from datetime import datetime
 from contextlib import contextmanager
 from typing import List, Optional
 from sqlalchemy import (
-    Column, Integer, String, ForeignKey, Table, create_engine, select)
+    Column, Integer, String, ForeignKey, Table, create_engine, select,
+    UniqueConstraint)
 from sqlalchemy.orm import (
     declarative_base, relationship, sessionmaker, Session)
 from sqlalchemy.exc import SQLAlchemyError
@@ -28,14 +29,17 @@ sample_tag = Table(
 class Sample(Base):
     __tablename__ = 'sample'
     id = Column(Integer, primary_key=True)
-    time = Column(String)
+    time = Column(String, unique=True)
     volume = Column(Integer)
     text = Column(String)
     tags = relationship(
         'Tag', secondary=sample_tag, back_populates='samples',
         # cascade="all, delete-orphan"
         cascade='all, delete')
-
+    # __table_args__ = (
+    #     UniqueConstraint('time', name='unique_time_constraint'),
+    # )
+    
     def __repr__(self) -> str:
         return (f'Sample(id={self.id!r}, time={self.time!r}, '
                 f'volume={self.volume!r}, text={self.text!r}) '
@@ -148,7 +152,9 @@ subparsers = parser.add_subparsers(
     description='Manage logging database DB',
     dest='command', title=f'{sys.argv[0]} commands')
 parser_init = subparsers.add_parser(
-    'init', help='Initialize DB. Make empty tables')
+    'init', help='Initialize DB. Make empty tables',
+    aliases=['initialize'])
+parser_init.set_defaults(func=lambda _, engine: initialize(engine))
 parser_del = subparsers.add_parser(
     'del', help='Delete table contents', aliases=['empty'])
 # set_defaults func signature: (logfile: str, engine: Engine)
@@ -223,7 +229,9 @@ if __name__ == '__main__':
     argcomplete.autocomplete(parser)
     args = parser.parse_args()
     engine = create_engine(f'sqlite:///{args.db}', echo=args.echo)
-    if args.command == 'del':
+    if args.command in ('init', 'initialize'):
+        args.func('', engine)
+    elif args.command == 'del':
         args.func('', engine)   # func = empty_tables
     elif args.command == 'print':
         args.func(args.day, engine)
