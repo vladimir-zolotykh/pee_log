@@ -51,6 +51,16 @@ class ScrolledTreeview(ttk.Treeview):
         iid = self.insert("", tk.END, text=values[0], values=values[1:])
         return iid              # e.g., 'I001'
 
+    def sort_column(self, cid: str, reverse: bool = False):
+        """cid: column index ('#0') or column identifier ('stamp')"""
+
+        # [(val1, iid1), (val2, iid2), ...]
+        values = [(self.set(iid, cid), iid) for iid in self.get_children('')]
+        values.sort(reverse=reverse)
+        for index, (val, iid) in enumerate(values):
+            self.move(iid, '', index)
+        self.heading(cid, command=lambda: self.sort_column(cid, not reverse))
+
     def set_columns(self):
         flds = list(LogRecord.__fields__)
         self.configure(columns=flds[1:])
@@ -58,7 +68,8 @@ class ScrolledTreeview(ttk.Treeview):
         w = 5 * 8
         self.column("#0", minwidth=w, width=w)
         for f in flds[1:]:
-            self.heading(f, text=f)
+            self.heading(f, text=f, command=(lambda cid=f: self.sort_column(
+                cid, reverse=False)))
             w = self.get_annotated_column_width(f)
             w *= 8              # assuming 1 char is 8 pix
             self.column(f, minwidth=w, width=w)
