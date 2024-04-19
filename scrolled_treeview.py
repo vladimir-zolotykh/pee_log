@@ -69,7 +69,7 @@ class ScrolledTreeview(ttk.Treeview):
         self.column("#0", minwidth=w, width=w)
         for f in flds[1:]:
             self.heading(f, text=f, command=(lambda cid=f: self.sort_column(
-                cid, reverse=False)))
+                cid, reverse=True)))
             w = self.get_annotated_column_width(f)
             w *= 8              # assuming 1 char is 8 pix
             self.column(f, minwidth=w, width=w)
