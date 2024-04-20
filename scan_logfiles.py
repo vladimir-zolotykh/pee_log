@@ -10,6 +10,7 @@ import shutil
 from datetime import datetime
 import argcomplete
 from sampletag_re import logrecords_generator
+from logrecord import LogRecord
 
 parser = argparse.ArgumentParser(
     prog='scan_logfiles.py',
@@ -26,6 +27,11 @@ parser_2400 = subparsers.add_parser(
 parser_2400.add_argument(
     'logfiles', nargs='+',
     help='The .txt file (e.g., LOG_DIARY/2024-03-15.txt)')
+parser_netvolume = subparsers.add_parser(
+    'netvolume', help='Replace gross volume with net volume')
+parser_netvolume.add_argument(
+    'logfiles', nargs='+',
+    help='The .txt file (e.g., LOG_DIARY/2024-01-23.txt)')
 parser_scan = subparsers.add_parser(
     'scan',
     help='Scan LOG_DIARY; print the requested properties')
@@ -89,6 +95,29 @@ def replace_2400(logfile, backup_ext='.bak'):
             f.writelines(lines2)
 
 
+def netvolume_replace(logname: str, backup_ext='.bak') -> None:
+    """Replace gross volume with net volume"""
+    records = []
+    num_lines_changed = 0
+    volume_previous = 26        # tare weight
+    with open(logname) as f:
+        for rec in logrecords_generator(logname, include_header=True):
+            if isinstance(rec, LogRecord):
+                if rec.has_volume:
+                    if rec.volume < volume_previous:
+                        volume_previous = 26
+                    rec.volume -= volume_previous
+                    volume_previous = rec.volume
+            records.append(rec)
+        if 0 < num_lines_changed:
+            if backup_ext:
+                shutil.copyfile(logname, logname + backup_ext)
+            print(f'"{logname}" modified, .bak file created')
+            with open(logname, 'w') as f:
+                for rec in records:
+                    f.write(str(rec))
+
+
 if __name__ == '__main__':
     argcomplete.autocomplete(parser)
     args = parser.parse_args()
@@ -97,6 +126,9 @@ if __name__ == '__main__':
         for logname in args.logfiles:
             if has_2400(logname):
                 replace_2400(logname, backup_ext='.bak')
+    elif args.command == 'netvolume':
+        for logname in args.logfiles:
+            netvolume_replace(logname, backup_ext='.bak')
     elif args.command == 'scan':
         for logname in sorted(glob.glob(os.path.join(args.logdir, '*.txt'))):
 
