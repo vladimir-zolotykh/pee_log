@@ -16,8 +16,22 @@ class LogRecord(BaseModel):
     label1: str = 'pee'
     label2: str = ''
     label3: str = ''
-    volume: int = Optional[None]
+    volume: Optional[int] = None
     note: str = ''
+
+    def __str__(self):
+        values = []
+        for field_name, field_value in self.__dict__.items():
+            typ = self.__annotations__[field_name]  # int, str, or datetime
+            if field_value is None:
+                continue
+            if typ == int:
+                values.append(str(field_value))
+            elif typ == datetime:
+                values.append(datetime.strftime(field_value, '%H%M'))
+            else:
+                values.append(field_value)
+        return ' '.join((val for val in values if bool(val)))
 
     @classmethod
     def from_list(cls, values: list):
