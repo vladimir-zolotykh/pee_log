@@ -107,15 +107,18 @@ def netvolume_replace(logname: str, backup_ext='.bak') -> None:
                     if rec.volume < volume_previous:
                         volume_previous = 26
                     rec.volume -= volume_previous
+                    num_lines_changed += 1
                     volume_previous = rec.volume
+            else:               # header line w/ trailing \n
+                rec = rec.rstrip()
             records.append(rec)
-        if 0 < num_lines_changed:
-            if backup_ext:
-                shutil.copyfile(logname, logname + backup_ext)
-            print(f'"{logname}" modified, .bak file created')
-            with open(logname, 'w') as f:
-                for rec in records:
-                    f.write(str(rec))
+    if 0 < num_lines_changed:
+        if backup_ext:
+            shutil.copyfile(logname, logname + backup_ext)
+        print(f'"{logname}" modified, .bak file created')
+        with open(logname, 'w') as f:
+            for rec in records:
+                print(str(rec), file=f)
 
 
 if __name__ == '__main__':

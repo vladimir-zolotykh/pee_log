@@ -25,13 +25,14 @@ class LogRecord(BaseModel):
             typ = self.__annotations__[field_name]  # int, str, or datetime
             if field_value is None:
                 continue
-            if typ == int:
+            if typ == int or isinstance(field_value, int):
                 values.append(str(field_value))
             elif typ == datetime:
                 values.append(datetime.strftime(field_value, '%H%M'))
             else:
                 values.append(field_value)
-        return ' '.join((val for val in values if bool(val)))
+        # skip 'id' field
+        return ' '.join((val for val in values[1:] if bool(val)))
 
     @classmethod
     def from_list(cls, values: list):
