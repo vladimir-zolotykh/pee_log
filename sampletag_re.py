@@ -69,15 +69,10 @@ def parse_sample(sample_str: str, sample_date: datetime) -> LogRecord:
         raise ParseSampleError(f'{sample_str.strip()}: Invalid sample line')
 
 
-def logrecords_generator(logfile: str) -> Generator[LogRecord, Any, None]:
-    def startswithany(line, words=('2400', 'Pira', 'headache', 'benchpress',
-                                   'IMET', 'Мефенаминка', 'Creatine', 'Кофе',
-                                   'душ', 'stool')):
-        for w in words:
-            if line.upper().startswith(w.upper()):
-                return True
-        return False
-
+def logrecords_generator(
+        logfile: str,
+        include_header: bool = False
+) -> Generator[LogRecord, Any, None]:
     try:
         fd = open(logfile)
     except FileNotFoundError:
@@ -92,11 +87,9 @@ def logrecords_generator(logfile: str) -> Generator[LogRecord, Any, None]:
                 continue
             if line_no == 1:
                 log_datetime = parse_date(line_str)
+                if include_header:
+                    yield line_str
             else:
-                if startswithany(line_str):
-                    print(f'"{logfile}" at line {line_no:2d}: '
-                          f'{line_str.strip()} - Invalid sample')
-                    continue
                 yield parse_sample(line_str, log_datetime)
 
 
