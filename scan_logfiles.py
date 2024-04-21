@@ -97,18 +97,19 @@ def replace_2400(logfile, backup_ext='.bak'):
 
 def netvolume_replace(logname: str, backup_ext='.bak') -> None:
     """Replace gross volume with net volume"""
+    TARE_WEIGHT = 25
     records = []
     num_lines_changed = 0
-    volume_previous = 26        # tare weight
+    volume_previous = TARE_WEIGHT
     with open(logname) as f:
         for rec in logrecords_generator(logname, include_header=True):
             if isinstance(rec, LogRecord):
                 if rec.has_volume:
                     if rec.volume < volume_previous:
-                        volume_previous = 26
-                    rec.volume -= volume_previous
+                        volume_previous = 25
+                    rec.volume, volume_previous = (
+                        rec.volume - volume_previous, rec.volume)
                     num_lines_changed += 1
-                    volume_previous = rec.volume
             else:               # header line w/ trailing \n
                 rec = rec.rstrip()
             records.append(rec)
