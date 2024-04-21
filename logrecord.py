@@ -13,10 +13,10 @@ from typing import Optional
 class LogRecord(BaseModel):
     id: int
     stamp: datetime = datetime.now()
+    volume: Optional[int] = None
     label1: str = 'pee'
     label2: str = ''
     label3: str = ''
-    volume: Optional[int] = None
     note: str = ''
 
     def __str__(self):
