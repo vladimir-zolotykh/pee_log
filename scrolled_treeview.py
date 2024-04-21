@@ -44,7 +44,10 @@ class ScrolledTreeview(ttk.Treeview):
         try:
             return {int: 5, str: 10, datetime: 18}[typ]
         except KeyError:
-            raise ValueError('Invalid LogRecord field width is requested')
+            if field == 'volume':
+                return 5
+            else:
+                raise
 
     def insert_log(self, log: LogRecord) -> str:
         values = log.as_list()
