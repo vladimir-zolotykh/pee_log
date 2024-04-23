@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 # PYTHON_ARGCOMPLETE_OK
 from datetime import datetime
+from typing import Optional, Union
 import tkinter as tk
 from tkinter import ttk
 from logrecord import LogRecord
@@ -65,13 +66,21 @@ class ScrolledTreeview(ttk.Treeview):
     def sort_column(self, cid: str, reverse: bool = False):
         """cid: column index ('#0') or column identifier ('stamp')"""
 
+        def none_or_int(volume: Optional[int]) -> Union[int, str]:
+            if isinstance(volume, int):
+                return int(volume)
+            elif volume is None:
+                return ''
+            else:
+                return str(volume)
+
         # [(val1, iid1), (val2, iid2), ...]
         values = [(self.set(iid, cid), iid) for iid in self.get_children('')]
         if cid in [f'label{i}' for i in range(1, 4)] + ['note']:
             # tup: (val, cid)
             key = lambda tup: tup[0]  # noqa
         elif cid == 'volume':
-            key = lambda tup: int(tup[0])  # noqa
+            key = lambda tup: none_or_int(tup[0])  # noqa
         elif cid == 'stamp':
             key = (lambda tup: datetime.strptime(  # noqa
                 tup[0], '%Y-%m-%d %H:%M:%S'))
