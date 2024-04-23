@@ -51,13 +51,8 @@ class ScrolledTreeview(ttk.Treeview):
                 raise
 
     def insert_log(self, log: LogRecord) -> str:
-        # values = log.as_list()
+        # After .insert has done, everything becomes a string
 
-        # 'values' are of different types, e.g., values[1] -
-        # datetime.datetime, values[2] - None or int, values[3] - str,
-        # etc.
-
-        # iid = self.insert("", tk.END, text=values[0], values=values[1:])
         volume = '' if log.volume is None else log.volume
         iid = self.insert("", tk.END, text=log.id,
                           values=(log.stamp, volume, *log.as_list()[4:]))
@@ -67,12 +62,10 @@ class ScrolledTreeview(ttk.Treeview):
         """cid: column index ('#0') or column identifier ('stamp')"""
 
         def none_or_int(volume: Optional[int]) -> Union[int, str]:
-            if isinstance(volume, int):
-                return int(volume)
-            elif volume is None:
-                return ''
-            else:
-                return str(volume)
+            try:
+                return int(volume)  # '10'
+            except ValueError:
+                return 0        # ''
 
         # [(val1, iid1), (val2, iid2), ...]
         values = [(self.set(iid, cid), iid) for iid in self.get_children('')]
