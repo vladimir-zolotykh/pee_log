@@ -56,10 +56,9 @@ def parse_sample(sample_str: str, sample_date: datetime) -> LogRecord:
                 label_text[n] = tags.pop(0)
             except IndexError:
                 break
-        try:
-            volume = int(m.group('volume'))
-        except TypeError:
-            volume = 0
+        volume = m.group('volume')
+        if isinstance(volume, int):
+            volume = int(volume)
         rec = LogRecord(
             id=1, stamp=stamp_str,
             label1=label_text[0], label2=label_text[1], label3=label_text[2],
