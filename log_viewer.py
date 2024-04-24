@@ -233,7 +233,10 @@ class LogViewer(tk.Tk):
         """Update form Entry values"""
 
         for fld_name in LogRecord.__fields__:
-            self.set_val(fld_name, getattr(log_rec, fld_name))
+            val = getattr(log_rec, fld_name)
+            if fld_name == 'volume' and val is None:
+                val = ''
+            self.set_val(fld_name, val)
 
     def get_logrecord(self) -> LogRecord:
         '''Get 'form' fields, make a LogRecord from them, return'''

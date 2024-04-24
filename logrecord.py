@@ -40,6 +40,12 @@ class LogRecord(BaseModel):
             return a.strip() if isinstance(a, str) else a
 
         opt = {k: _strip_if(v) for k, v in zip(cls.__fields__, values)}
+        volume = opt['volume']
+        try:
+            volume = int(opt['volume'])
+        except ValueError:
+            volume = None
+        opt['volume'] = volume
         return cls(**opt)
 
     @classmethod
