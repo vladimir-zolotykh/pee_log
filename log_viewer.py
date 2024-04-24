@@ -3,12 +3,13 @@
 # PYTHON_ARGCOMPLETE_OK
 # from dataclasses import dataclass
 import os
-from typing import Optional
+from typing import Optional     # noqa
 from datetime import datetime
 import sqlite3
 import argparse
 import argcomplete
 import tkinter as tk
+import tkinter.font as tkFont
 from tkinter import ttk         # noqa
 from tkinter.messagebox import askyesno
 # from scrolled_listbox import ScrolledListbox
@@ -90,14 +91,18 @@ class LogViewer(tk.Tk):
         buttons_bar = tk.Frame(form)
         form.rowconfigure(row, weight=1)
         buttons_bar.grid(column=0, row=row, columnspan=2, sticky=tk.S)
-        update_btn = tk.Button(buttons_bar, text='Update',
-                               command=self.edit_log)
+        update_btn = tk.Button(buttons_bar,
+                               text='Update', command=self.edit_log)
         update_btn.grid(column=0, row=0)
         self.erase_btn = tk.Button(buttons_bar, text='new',
                                    command=self.make_new)
         self.erase_btn.grid(column=1, row=0)
-        self.del_btn = tk.Button(buttons_bar, text='Del', command=self.del_log,
-                                 state=tk.DISABLED)
+        self.del_btn = tk.Button(
+            buttons_bar, text='Del', command=self.del_log, state=tk.DISABLED)
+        # >>> tkFont.nametofont('TkDefaultFont').config()['family']
+        # 'sans-serif'
+        for btn in update_btn, self.erase_btn, self.del_btn:
+            btn.config(font=tkFont.Font(family='sans-serif', size=8))
         self.del_btn.grid(column=2, row=0)
 
     def create_form_fields(self, form) -> int:
