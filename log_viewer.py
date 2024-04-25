@@ -93,17 +93,24 @@ class LogViewer(tk.Tk):
         buttons_bar.grid(column=0, row=row, columnspan=2, sticky=tk.S)
         update_btn = tk.Button(buttons_bar,
                                text='Update', command=self.edit_log)
-        update_btn.grid(column=0, row=0)
+        narrow_btn = tk.Button(buttons_bar,
+                               text='Narrow\nto date',
+                               command=self.narrow_to_date)
         self.erase_btn = tk.Button(buttons_bar, text='new',
                                    command=self.make_new)
-        self.erase_btn.grid(column=1, row=0)
         self.del_btn = tk.Button(
             buttons_bar, text='Del', command=self.del_log, state=tk.DISABLED)
+        self.del_btn.grid(column=2, row=0)
         # >>> tkFont.nametofont('TkDefaultFont').config()['family']
         # 'sans-serif'
-        for btn in update_btn, self.erase_btn, self.del_btn:
-            btn.config(font=tkFont.Font(family='sans-serif', size=8))
-        self.del_btn.grid(column=2, row=0)
+        for col, btn in enumerate((update_btn, narrow_btn, self.erase_btn,
+                                   self.del_btn)):
+            size = 6 if btn.cget('text').startswith('Narrow') else 8
+            btn.grid(column=col, row=0)
+            btn.config(font=tkFont.Font(family='sans-serif', size=size))
+
+    def narrow_to_date(self):
+        pass
 
     def create_form_fields(self, form) -> int:
         """Create form fields and their StringVar -s
