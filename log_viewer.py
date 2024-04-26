@@ -23,6 +23,7 @@ import labeldb
 from sqlalchemy import func
 import sampletag as SA
 # from apeelog2 import Logged, Event
+from tooltip import Tooltip
 
 
 class ConnectionDiary(sqlite3.Connection):
@@ -93,14 +94,28 @@ class LogViewer(tk.Tk):
         buttons_bar.grid(column=0, row=row, columnspan=2, sticky=tk.S)
         update_btn = tk.Button(buttons_bar,
                                text='Update', command=self.edit_log)
+        Tooltip(update_btn, """\
+Update the existing sample or
+create a new one""",
+                font=tkFont.Font(family='sans-serif', size=8))
         narrow_btn = tk.Button(buttons_bar,
                                text='Narrow\nto date',
                                command=self.narrow_to_date)
+        Tooltip(narrow_btn, """\
+Enter the date into "stamp" field above then press me.
+Clear the "stamp" to see all logs.""",
+                font=tkFont.Font(family='sans-serif', size=8))
         self.erase_btn = tk.Button(buttons_bar, text='new',
                                    command=self.make_new)
+        Tooltip(self.erase_btn, """\
+Initialize the fields above for the new sample""",
+                font=tkFont.Font(family='sans-serif', size=8))
         self.del_btn = tk.Button(
             buttons_bar, text='Del', command=self.del_log, state=tk.DISABLED)
         self.del_btn.grid(column=2, row=0)
+        Tooltip(self.del_btn, """\
+Delete from the database the existing sample""",
+                font=tkFont.Font(family='sans-serif', size=8))
         # >>> tkFont.nametofont('TkDefaultFont').config()['family']
         # 'sans-serif'
         for col, btn in enumerate((update_btn, narrow_btn, self.erase_btn,
@@ -111,8 +126,12 @@ class LogViewer(tk.Tk):
 
     def narrow_to_date(self):
         # stamp str -> datetime obj
-        self.update_log_list(datetime.strptime(self.get_var('stamp').get(),
-                                               '%Y-%m-%d %H:%M:%S'))
+        try:
+            req_date = datetime.strptime(
+                self.get_var('stamp').get(), '%Y-%m-%d %H:%M:%S')
+        except ValueError:
+            req_date = None
+        self.update_log_list(req_date)
 
     def create_form_fields(self, form) -> int:
         """Create form fields and their StringVar -s
