@@ -110,10 +110,9 @@ class LogViewer(tk.Tk):
             btn.config(font=tkFont.Font(family='sans-serif', size=size))
 
     def narrow_to_date(self):
-        stamp_var = self.get_var('stamp')
-        time_str = stamp_var.get()
-        time = datetime.strptime(time_str, '%Y-%m-%d %H:%M:%S')
-        self.update_log_list(time)
+        # stamp str -> datetime obj
+        self.update_log_list(datetime.strptime(self.get_var('stamp').get(),
+                                               '%Y-%m-%d %H:%M:%S'))
 
     def create_form_fields(self, form) -> int:
         """Create form fields and their StringVar -s
@@ -153,6 +152,7 @@ class LogViewer(tk.Tk):
         # Session = SA.sessionmaker(self.engine)
         on_date = True          # all samples
         if narrow_to_date:
+            # narrow_to_date datetime obj -> date str
             date_str = narrow_to_date.strftime('%Y-%m-%d')
             on_date = (func.DATE(SA.Sample.time) == date_str)
         with SA.Session(self.engine) as session:
