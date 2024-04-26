@@ -39,7 +39,7 @@ class Sample(Base):
     # __table_args__ = (
     #     UniqueConstraint('time', name='unique_time_constraint'),
     # )
-    
+
     def __repr__(self) -> str:
         return (f'Sample(id={self.id!r}, time={self.time!r}, '
                 f'volume={self.volume!r}, text={self.text!r}) '

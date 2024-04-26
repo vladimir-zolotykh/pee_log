@@ -20,7 +20,7 @@ from logrecord import LogRecord
 import labeldb
 # from sqlalchemy.orm import Session
 # from sqlalchemy import create_engine, select
-# from sqlalchemy import func
+from sqlalchemy import func
 import sampletag as SA
 # from apeelog2 import Logged, Event
 
@@ -110,7 +110,10 @@ class LogViewer(tk.Tk):
             btn.config(font=tkFont.Font(family='sans-serif', size=size))
 
     def narrow_to_date(self):
-        pass
+        stamp_var = self.get_var('stamp')
+        time_str = stamp_var.get()
+        time = datetime.strptime(time_str, '%Y-%m-%d %H:%M:%S')
+        self.update_log_list(time)
 
     def create_form_fields(self, form) -> int:
         """Create form fields and their StringVar -s
@@ -138,15 +141,22 @@ class LogViewer(tk.Tk):
     def muffle_click(self, event):
         return "break"
 
-    def update_log_list(self):
+    def update_log_list(
+            self,
+            narrow_to_date: Optional[datetime.date] = None  # %Y-%m-%d
+    ):
         """Update Treeview (.log_list)
 
         delete all view items, read all db records, add them to the view"""
 
         self.log_list.delete(*self.log_list.get_children(''))
-        Session = SA.sessionmaker(self.engine)
-        with Session() as session:
-            for rec in session.scalars(SA.select(SA.Sample)):
+        # Session = SA.sessionmaker(self.engine)
+        on_date = True          # all samples
+        if narrow_to_date:
+            date_str = narrow_to_date.strftime('%Y-%m-%d')
+            on_date = (func.DATE(SA.Sample.time) == date_str)
+        with SA.Session(self.engine) as session:
+            for rec in session.scalars(SA.select(SA.Sample).where(on_date)):
                 labels = [''] * 3
                 for i in range(3):
                     try:
