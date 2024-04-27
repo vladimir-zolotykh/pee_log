@@ -98,27 +98,25 @@ class LogViewer(tk.Tk):
         Tooltip(update_btn, """\
 Update the existing sample or
 create a new one""",
-                font=tkFont.Font(family='sans-serif', size=8))
+                font=button_font.TooltipFont())
         narrow_btn = tk.Button(buttons_bar,
                                text='Narrow\nto date',
                                command=self.narrow_to_date)
         Tooltip(narrow_btn, """\
 Enter the date into "stamp" field above then press me.
 Clear the "stamp" to see all logs.""",
-                font=tkFont.Font(family='sans-serif', size=8))
+                font=button_font.TooltipFont())
         self.erase_btn = tk.Button(buttons_bar, text='new',
                                    command=self.make_new)
         Tooltip(self.erase_btn, """\
 Initialize the fields above for the new sample""",
-                font=tkFont.Font(family='sans-serif', size=8))
+                font=button_font.TooltipFont())
         self.del_btn = tk.Button(
             buttons_bar, text='Del', command=self.del_log, state=tk.DISABLED)
         self.del_btn.grid(column=2, row=0)
         Tooltip(self.del_btn, """\
 Delete from the database the existing sample""",
-                # font=tkFont.Font(family='sans-serif', size=8)
-                font=button_font.TooltipFont(),
-                )
+                font=button_font.TooltipFont())
         # >>> tkFont.nametofont('TkDefaultFont').config()['family']
         # 'sans-serif'
         for col, btn in enumerate((update_btn, narrow_btn, self.erase_btn,
