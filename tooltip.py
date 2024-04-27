@@ -25,7 +25,7 @@ class Tooltip:
         # For some widgets like Entry, (x, y) is always (0, 0)
         x, y, _, _ = self.widget.bbox('insert')
         x += self.widget.winfo_rootx() + 25
-        y += self.widget.winfo_rooty() + 25
+        y += self.widget.winfo_rooty() + self.widget.winfo_height()
         self.tooltip = tk.Toplevel(self.widget)
         self.tooltip.wm_overrideredirect(True)
         self.tooltip.wm_geometry(f"+{x}+{y}")
