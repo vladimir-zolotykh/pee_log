@@ -123,7 +123,7 @@ Delete from the database the existing sample""",
                                    self.del_btn)):
             size = 6 if btn.cget('text').startswith('Narrow') else 8
             btn.grid(column=col, row=0)
-            btn.config(font=tkFont.Font(family='sans-serif', size=size))
+            btn.config(font=button_font.ButtonFont(size=size))
 
     def narrow_to_date(self):
         # stamp str -> datetime obj

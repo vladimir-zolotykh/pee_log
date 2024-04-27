@@ -10,7 +10,7 @@ import tkinter.font as tkFont
 class SingletonFont(tkFont.Font):
     _instances = {}
 
-    def __new__(cls):
+    def __new__(cls, family='sans-serif', size=8):
         if cls not in cls._instances:
             cls._instances[cls] = super().__new__(cls)
         return cls._instances[cls]
