@@ -7,7 +7,7 @@ from contextlib import contextmanager
 from typing import List, Optional
 from sqlalchemy import (
     Column, Integer, String, ForeignKey, Table, create_engine, select,
-    UniqueConstraint)
+    UniqueConstraint, func)
 from sqlalchemy.orm import (
     declarative_base, relationship, sessionmaker, Session)
 from sqlalchemy.exc import SQLAlchemyError
