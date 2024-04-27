@@ -23,6 +23,7 @@ import labeldb
 from sqlalchemy import func
 import sampletag as SA
 # from apeelog2 import Logged, Event
+import button_font
 from tooltip import Tooltip
 
 
@@ -115,7 +116,9 @@ Initialize the fields above for the new sample""",
         self.del_btn.grid(column=2, row=0)
         Tooltip(self.del_btn, """\
 Delete from the database the existing sample""",
-                font=tkFont.Font(family='sans-serif', size=8))
+                # font=tkFont.Font(family='sans-serif', size=8)
+                font=button_font.TooltipFont(),
+                )
         # >>> tkFont.nametofont('TkDefaultFont').config()['family']
         # 'sans-serif'
         for col, btn in enumerate((update_btn, narrow_btn, self.erase_btn,

@@ -2,15 +2,20 @@
 # -*- coding: utf-8 -*-
 # PYTHON_ARGCOMPLETE_OK
 import tkinter as tk
-import tkinter.font as tkFont
+# import tkinter.font as tkFont
+import button_font
 
 
 class Tooltip:
-    def __init__(self, widget, text, font: tk.font.Font = None):
+    def __init__(
+            self, widget, text,
+            font: button_font.SingletonFont = None
+    ):
         self.widget = widget
         self.text = text
         if font is None:
-            font = tkFont.Font(family='sans-serif', size=8)
+            # font = tkFont.Font(family='sans-serif', size=8)
+            font = button_font.TooltipFont()
         self.font = font
         self.tooltip = None
         self.widget.bind("<Enter>", self.show_tooltip)
