@@ -106,10 +106,10 @@ create a new one""",
 Enter the date into "stamp" field above then press me.
 Clear the "stamp" to see all logs.""",
                 font=button_font.TooltipFont())
-        self.erase_btn = tk.Menubutton(buttons_bar, text='Script',
-                                       relief=tk.RAISED, bd=4)
-        menu = tk.Menu(self.erase_btn, tearoff=0)
-        self.erase_btn.config(menu=menu)
+        self.script_btn = tk.Menubutton(
+            buttons_bar, text='Script', relief=tk.RAISED, bd=2)
+        menu = tk.Menu(self.script_btn, tearoff=0)
+        self.script_btn.config(menu=menu)
         menu.add_command(label='Blank sample',
                          font=button_font.ButtonFont(),
                          command=self.make_new)
@@ -117,7 +117,7 @@ Clear the "stamp" to see all logs.""",
                          command=self.make_new)
         # self.erase_btn = tk.Button(buttons_bar, text='new',
         #                            command=self.make_new)
-        Tooltip(self.erase_btn, """\
+        Tooltip(self.script_btn, """\
 Initialize the fields above for the new sample""",
                 font=button_font.TooltipFont())
         self.del_btn = tk.Button(
@@ -128,7 +128,7 @@ Delete from the database the existing sample""",
                 font=button_font.TooltipFont())
         # >>> tkFont.nametofont('TkDefaultFont').config()['family']
         # 'sans-serif'
-        for col, btn in enumerate((update_btn, narrow_btn, self.erase_btn,
+        for col, btn in enumerate((update_btn, narrow_btn, self.script_btn,
                                    self.del_btn)):
             size = 6 if btn.cget('text').startswith('Narrow') else 8
             btn.grid(column=col, row=0)
