@@ -114,7 +114,11 @@ Clear the "stamp" to see all logs.""",
             label='Blank sample', font=button_font.ButtonFont(),
             command=self.make_new)
         script_menu.add_command(
-            label='IMET', font=button_font.ButtonFont(), command=self.make_new)
+            label='pee', font=button_font.ButtonFont(),
+            command=lambda: self.make_tagged_sample('pee'))
+        script_menu.add_command(
+            label='IMET', font=button_font.ButtonFont(),
+            command=lambda: self.make_tagged_sample('IMET'))
         Tooltip(self.script_btn, """\
 Initialize the fields above for the new sample""",
                 font=button_font.TooltipFont())
@@ -244,6 +248,14 @@ Delete from the database the existing sample""",
             else:
                 var.set('')
         self.del_btn.config(state=tk.DISABLED)
+
+    def make_tagged_sample(self, *tags):
+        self.make_new()
+        if not tags:
+            tags = ('pee', )
+        for n, tag in enumerate(tags, 1):
+            assert n < 3
+            self.form_vars[f'label{n}'].set(tag)
 
     def del_log(self):
         """Delete selected log record"""
