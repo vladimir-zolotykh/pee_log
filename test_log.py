@@ -31,9 +31,10 @@ def test_log(input_file):
 parser = argparse.ArgumentParser(
     description='Testify the input file is a log file',
     formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-parser.add_argument('input_file', help='Log file (.txt) to test')
+parser.add_argument('input_file', nargs='+', help='Log file (.txt) to test')
 
 if __name__ == '__main__':
     argcomplete.autocomplete(parser)
     args = parser.parse_args()
-    test_log(args.input_file)
+    for log_file in args.input_file:
+        test_log(log_file)
