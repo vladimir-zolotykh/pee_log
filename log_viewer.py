@@ -230,23 +230,12 @@ Delete from the database the existing sample""",
         var.set(value)
 
     def make_new(self):
-        """Set the form field to the defaults"""
+        """Set the form fields to defaults"""
 
-        for fld_name, var in self.form_vars.items():
-            if fld_name == 'id':
-                Session = SA.sessionmaker(self.engine)
-                with Session() as session:
-                    id = session.query(SA.func.max(SA.Sample.id)).scalar()
-                var.set(str(id + 1) if isinstance(id, int) else '1')
-            elif fld_name == 'stamp':
-                dt = datetime.now()
-                var.set(dt)
-            elif fld_name == 'volume':
-                var.set('0')
-            elif fld_name == 'label1':
-                var.set('pee')
-            else:
-                var.set('')
+        with SA.Session(self.engine) as session:
+            id = session.scalar(SA.select(SA.func.max(SA.Sample.id)))
+        self.form_vars['id'].set(str(id + 1) if isinstance(id, int) else '1')
+        self.form_vars['stamp'].set(datetime.now())
         self.del_btn.config(state=tk.DISABLED)
 
     def make_tagged_sample(self, *tags):
