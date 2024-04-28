@@ -108,15 +108,13 @@ Clear the "stamp" to see all logs.""",
                 font=button_font.TooltipFont())
         self.script_btn = tk.Menubutton(
             buttons_bar, text='Script', relief=tk.RAISED, bd=2)
-        menu = tk.Menu(self.script_btn, tearoff=0)
-        self.script_btn.config(menu=menu)
-        menu.add_command(label='Blank sample',
-                         font=button_font.ButtonFont(),
-                         command=self.make_new)
-        menu.add_command(label='IMET', font=button_font.ButtonFont(),
-                         command=self.make_new)
-        # self.erase_btn = tk.Button(buttons_bar, text='new',
-        #                            command=self.make_new)
+        script_menu = tk.Menu(self.script_btn, tearoff=0)
+        self.script_btn.config(menu=script_menu)
+        script_menu.add_command(
+            label='Blank sample', font=button_font.ButtonFont(),
+            command=self.make_new)
+        script_menu.add_command(
+            label='IMET', font=button_font.ButtonFont(), command=self.make_new)
         Tooltip(self.script_btn, """\
 Initialize the fields above for the new sample""",
                 font=button_font.TooltipFont())
