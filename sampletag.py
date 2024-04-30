@@ -74,25 +74,26 @@ def session_scope(engine):
         session.close()
 
 
+def get_or_make_tag(
+        session: Session, tag_text: str
+) -> Optional[Tag]:
+    """Return the existing or create a new Tag"""
+
+    if tag_text:
+        tag = session.scalar(select(Tag).where(
+            Tag.text == tag_text))
+        if not tag:
+            tag = Tag(text=tag_text)
+            session.add(tag)
+        return tag
+    else:
+        return None
+
+
 def _get_logrecord_tags(
         session: Session, rec: LogRecord
 ) -> List[Tag]:
     """For a given LogRecord "rec" return the list of Tags"""
-
-    def get_or_make_tag(
-            session: Session, tag_text: str
-    ) -> Optional[Tag]:
-        """Return the existing or create a new Tag"""
-
-        if tag_text:
-            tag = session.scalar(select(Tag).where(
-                Tag.text == tag_text))
-            if not tag:
-                tag = Tag(text=tag_text)
-                session.add(tag)
-            return tag
-        else:
-            return None
 
     tags = []
     for label_caption in (f'label{n}' for n in range(1, 4)):
@@ -128,6 +129,23 @@ def update_sample(session, sample: Sample, rec: LogRecord) -> None:
     sample.tags = tags
 
 
+def add_missing_tag(
+        session,
+        tags: List[Tag],
+        missing_tag_text: str = 'pee'
+):
+    """Add Tag(text=missing_tag_text) to the TAGS if missing
+
+    return the TAGS"""
+
+    for tag in tags:
+        if tag.text == missing_tag_text:
+            return tags
+    new_tag = get_or_make_tag(session, missing_tag_text)
+    tags.insert(0, new_tag)
+    return tags
+
+
 def add_logfile_records(logfile: str, engine) -> None:
     """Add LOGFILE records to DB (all records or none)
 
@@ -135,7 +153,9 @@ def add_logfile_records(logfile: str, engine) -> None:
 
     for rec in logrecords_generator(logfile):
         with session_scope(engine) as session:
-            tags = _get_logrecord_tags(session, rec)
+            tags = add_missing_tag(session,
+                                   _get_logrecord_tags(session, rec),
+                                   missing_tag_text='pee')
             kwds = {'time': rec.stamp, 'volume': rec.volume, 'text': rec.note}
             sample = Sample(**kwds)
             session.add(sample)
