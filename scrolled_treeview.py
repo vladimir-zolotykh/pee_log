@@ -55,7 +55,7 @@ class ScrolledTreeview(ttk.Treeview):
 
         volume = '' if log.volume is None else log.volume
         iid = self.insert("", tk.END, text=log.id,
-                          values=(log.stamp, volume, *log.as_list()[4:]))
+                          values=(log.stamp, volume, *log.as_list()[3:]))
         return iid              # e.g., 'I001'
 
     def sort_column(self, cid: str, reverse: bool = False):
