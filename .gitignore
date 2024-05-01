@@ -4,4 +4,4 @@ LOG_XML/
 __pycache__/
 .emacs.desktop
 .emacs.desktop.lock
-sampletag.db
+wclog.db
