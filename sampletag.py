@@ -31,12 +31,12 @@ def add_logfile_records(logfile: str, engine) -> None:
 
 
 parser = argparse.ArgumentParser(
-    prog='sampletag.py',
-    description='Manage sampletag.db',
+    prog='wclog.py',
+    description='Manage wclog.db',
     formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 parser.add_argument(
     '--echo', action='store_true', help='Print emitted SQL commands')
-parser.add_argument('--db', default='sampletag.db', help='Database file (DB)')
+parser.add_argument('--db', default='wclog.db', help='Database file (DB)')
 subparsers = parser.add_subparsers(
     description='Manage logging database DB',
     dest='command', title=f'{sys.argv[0]} commands')

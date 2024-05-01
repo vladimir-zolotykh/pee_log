@@ -306,7 +306,7 @@ parser = argparse.ArgumentParser(
     description="pee_log db veiwer",
     formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 parser.add_argument('--db', help='Database file (.db)',
-                    default='./sampletag.db')
+                    default='./wclog.db')
 parser.add_argument('--echo', action='store_true', default=False,
                     help='Print emitted SQL commands')
 
