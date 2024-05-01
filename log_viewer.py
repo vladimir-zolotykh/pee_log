@@ -5,7 +5,7 @@
 import os
 from typing import Optional
 from datetime import datetime
-import sqlite3
+# import sqlite3
 import argparse
 import argcomplete
 import tkinter as tk
@@ -14,7 +14,7 @@ from scrolled_treeview import ScrolledTreeview
 from time4 import Time4, Time4Var
 from combo_db import ComboDb
 from logrecord import LogRecord
-import labeldb
+# import labeldb
 from sqlalchemy import select, create_engine, func
 from sqlalchemy.orm import sessionmaker
 from models import Sample
@@ -22,36 +22,6 @@ from database import session_scope
 from database import Session
 import button_font
 from tooltip import Tooltip
-
-
-class ConnectionDiary(sqlite3.Connection):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.app = None
-        self.labels = labeldb.LabelDb(self, self.app)  # "labels" table
-
-    def make_tables(self):
-        self.execute('''
-            CREATE TABLE IF NOT EXISTS labels (
-                id INTEGER PRIMARY KEY,
-                label TEXT NOT NULL UNIQUE
-            );
-        ''')
-        self.execute('''
-            CREATE TABLE IF NOT EXISTS pee_log (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                pee_time TEXT,
-                label1_id INTEGER,
-                label2_id INTEGER,
-                label3_id INTEGER,
-                volume INTEGER DEFAULT 0,
-                note TEXT DEFAULT '')
-        ''')
-
-    def read_logs(self):
-        # val = LabelDb(log_viewer).label_to_id(val)
-        return (LogRecord.from_db(self, row)
-                for row in self.execute('SELECT * FROM pee_log'))
 
 
 class LogViewer(tk.Tk):
@@ -98,8 +68,8 @@ create a new one""",
                                text='Narrow\nto date',
                                command=self.narrow_to_date)
         Tooltip(narrow_btn, """\
-Enter the date into "stamp" field above then press me.
-Clear the "stamp" to see all logs.""",
+Select/enter the date into "stamp" field click the button.
+Click again to revert.""",
                 font=button_font.TooltipFont())
         self.script_btn = tk.Menubutton(
             buttons_bar, text='Script', relief=tk.RAISED, bd=2)
@@ -133,12 +103,17 @@ Delete from the database the existing sample""",
 
     def narrow_to_date(self):
         # stamp str -> datetime obj
+        if not hasattr(self, 'req_date'):
+            setattr(self, 'req_date', None)
         try:
             req_date = datetime.strptime(
                 self.get_var('stamp').get(), '%Y-%m-%d %H:%M:%S')
         except ValueError:
             req_date = None
+        if self.req_date == req_date:
+            req_date = None
         self.update_log_list(req_date)
+        self.req_date = req_date
 
     def create_form_fields(self, form) -> int:
         """Create form fields and their StringVar -s
