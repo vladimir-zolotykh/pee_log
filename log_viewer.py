@@ -3,26 +3,23 @@
 # PYTHON_ARGCOMPLETE_OK
 # from dataclasses import dataclass
 import os
-from typing import Optional     # noqa
+from typing import Optional
 from datetime import datetime
 import sqlite3
 import argparse
 import argcomplete
 import tkinter as tk
-# import tkinter.font as tkFont
-from tkinter import ttk         # noqa
 from tkinter.messagebox import askyesno
-# from scrolled_listbox import ScrolledListbox
 from scrolled_treeview import ScrolledTreeview
 from time4 import Time4, Time4Var
 from combo_db import ComboDb
 from logrecord import LogRecord
 import labeldb
-# from sqlalchemy.orm import Session
-# from sqlalchemy import create_engine, select
-# from sqlalchemy import func
-import sampletag as SA
-# from apeelog2 import Logged, Event
+from sqlalchemy import select, create_engine, func
+from sqlalchemy.orm import sessionmaker
+from models import Sample
+from database import session_scope
+from database import Session
 import button_font
 from tooltip import Tooltip
 
@@ -76,8 +73,6 @@ class LogViewer(tk.Tk):
         log_list = ScrolledTreeview(self, columns=('id', 'stamp', 'label',
                                                    'volume', 'note'),
                                     selectmode='browse')
-        # log_list = ScrolledListbox(self, selectmode=tk.SINGLE, width=60,
-        #                            height=25, font=('Courier', 12))
         self.columnconfigure(0, weight=1)
         self.rowconfigure(0, weight=1)
         log_list.grid(column=0, row=0, sticky=tk.NSEW)
@@ -185,9 +180,9 @@ Delete from the database the existing sample""",
         if narrow_to_date:
             # narrow_to_date datetime obj -> date str
             date_str = narrow_to_date.strftime('%Y-%m-%d')
-            on_date = (SA.func.DATE(SA.Sample.time) == date_str)
-        with SA.Session(self.engine) as session:
-            for rec in session.scalars(SA.select(SA.Sample).where(on_date)):
+            on_date = (func.DATE(Sample.time) == date_str)
+        with Session(self.engine) as session:
+            for rec in session.scalars(select(Sample).where(on_date)):
                 labels = [''] * 3
                 for i in range(3):
                     try:
@@ -232,8 +227,8 @@ Delete from the database the existing sample""",
     def make_new(self):
         """Set the form fields to defaults"""
 
-        with SA.Session(self.engine) as session:
-            id = session.scalar(SA.select(SA.func.max(SA.Sample.id)))
+        with Session(self.engine) as session:
+            id = session.scalar(select(func.max(Sample.id)))
         self.form_vars['id'].set(str(id + 1) if isinstance(id, int) else '1')
         self.form_vars['stamp'].set(datetime.now())
         self.del_btn.config(state=tk.DISABLED)
@@ -253,10 +248,10 @@ Delete from the database the existing sample""",
         if askyesno(f"{os.path.basename(__file__)}",
                     f"Delete log id={rec.id}? ",
                     parent=self):
-            Session = SA.sessionmaker(self.engine)
+            Session = sessionmaker(self.engine)
             with Session() as session:
-                delete_me = session.scalar(SA.select(SA.Sample).where(
-                    SA.Sample.id == rec.id))
+                delete_me = session.scalar(select(Sample).where(
+                    Sample.id == rec.id))
                 session.delete(delete_me)
                 session.commit()
             self.update_log_list()
@@ -266,17 +261,17 @@ Delete from the database the existing sample""",
 
         rec = self.get_logrecord()
         # with SA.Session(self.engine) as session:
-        with SA.session_scope(self.engine) as session:
-            sample = session.get(SA.Sample, rec.id)
+        with session_scope(self.engine) as session:
+            sample = session.get(Sample, rec.id)
             if sample:
                 if askyesno(f"{os.path.basename(__file__)}",
                             f"Log {rec.id} exists. Update? ",
                             parent=self):
-                    SA.update_sample(session, sample, rec)
+                    session.update_sample(sample, rec)
             else:
-                sample = SA.Sample(id=rec.id, time=rec.stamp,
-                                   volume=rec.volume, text=rec.note)
-                SA.add_sample(session, sample, rec)
+                sample = Sample(id=rec.id, time=rec.stamp,
+                                volume=rec.volume, text=rec.note)
+                session.add_sample(sample, rec)
         self.update_log_list()
 
     def update_fields(self, log_rec: LogRecord) -> None:
@@ -291,13 +286,10 @@ Delete from the database the existing sample""",
     def get_logrecord(self) -> LogRecord:
         '''Get 'form' fields, make a LogRecord from them, return'''
 
-        # return LogRecord.from_list([self.get_var(fld_name).get(parent=self)
-        #                             for fld_name in LogRecord.__fields__])
         values = []
         for fld_name in LogRecord.__fields__:
             var = self.get_var(fld_name)
             if fld_name.startswith('label'):
-                # values.append(var.get(parent=self))
                 values.append(var.get())
             else:
                 values.append(var.get())
@@ -322,5 +314,5 @@ parser.add_argument('--echo', action='store_true', default=False,
 if __name__ == '__main__':
     argcomplete.autocomplete(parser)
     args = parser.parse_args()
-    v = LogViewer(SA.create_engine(f'sqlite:///{args.db}', echo=args.echo))
+    v = LogViewer(create_engine(f'sqlite:///{args.db}', echo=args.echo))
     v.mainloop()

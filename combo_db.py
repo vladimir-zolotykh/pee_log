@@ -2,7 +2,9 @@
 # -*- coding: utf-8 -*-
 # PYTHON_ARGCOMPLETE_OK
 from tkinter import ttk
-import sampletag as SA
+from sqlalchemy.sql import select
+from sqlalchemy.orm import Session
+from models import Tag
 
 
 class ComboDb(ttk.Combobox):
@@ -18,6 +20,6 @@ class ComboDb(ttk.Combobox):
 
     def update_values(self) -> None:
         # Session = SA.sessionmaker(self.engine)
-        with SA.Session(self.engine) as session:
-            values = [tag.text for tag in session.scalars(SA.select(SA.Tag))]
+        with Session(self.engine) as session:
+            values = [tag.text for tag in session.scalars(select(Tag))]
         self.config(values=values)
