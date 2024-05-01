@@ -14,7 +14,6 @@ from scrolled_treeview import ScrolledTreeview
 from time4 import Time4, Time4Var
 from combo_db import ComboDb
 from logrecord import LogRecord
-# import labeldb
 from sqlalchemy import select, create_engine, func
 from sqlalchemy.orm import sessionmaker
 from models import Sample
