@@ -3,9 +3,9 @@
 # PYTHON_ARGCOMPLETE_OK
 # from dataclasses import dataclass
 import os
+import threading
 from typing import Optional
 from datetime import datetime
-# import sqlite3
 import argparse
 import argcomplete
 import tkinter as tk
@@ -111,7 +111,9 @@ Delete from the database the existing sample""",
             req_date = None
         if self.req_date == req_date:
             req_date = None
-        self.update_log_list(req_date)
+        self.config(cursor='watch')
+        _t = threading.Thread(target=self.update_log_list, args=(req_date, ))
+        _t.start()
         self.req_date = req_date
 
     def create_form_fields(self, form) -> int:
@@ -173,6 +175,7 @@ Delete from the database the existing sample""",
                     volume=rec.volume,
                     note=rec.text if rec.text else '')
                 self.log_list.insert_log(log)
+        self.config(cursor='')
 
     def get_var(self, fld_name):
         """Return tk.StringVar "form variable" named FLD_NAME
