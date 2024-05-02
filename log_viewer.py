@@ -18,7 +18,7 @@ from sqlalchemy import select, create_engine, func
 from sqlalchemy.orm import sessionmaker
 from models import Sample
 from database import session_scope
-from database import Session
+from database import initialize, Session
 import button_font
 from tooltip import Tooltip
 
@@ -287,10 +287,18 @@ parser.add_argument('--db', help='Database file (.db)',
                     default='./wclog.db')
 parser.add_argument('--echo', action='store_true', default=False,
                     help='Print emitted SQL commands')
+parser.add_argument('--temp', help='''
+Db in memory. Could be copied to .db file before destroying''',
+                    action='store_true')
 
 
 if __name__ == '__main__':
     argcomplete.autocomplete(parser)
     args = parser.parse_args()
-    v = LogViewer(create_engine(f'sqlite:///{args.db}', echo=args.echo))
+    database_url = ('sqlite:///:memory:' if args.temp
+                    else f'sqlite:///{args.db}')
+    engine = create_engine(database_url, echo=args.echo)
+    initialize(engine)
+    v = LogViewer(engine)
+    # create_engine(database_url, echo=args.echo))
     v.mainloop()
