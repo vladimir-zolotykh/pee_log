@@ -3,30 +3,31 @@
 # PYTHON_ARGCOMPLETE_OK
 from contextlib import contextmanager
 from sqlalchemy import select
-from sqlalchemy.orm import declarative_base, sessionmaker, Session
+from sqlalchemy.orm import sessionmaker, Session
 from sqlalchemy.exc import SQLAlchemyError
 from typing import List, Optional
-from models import Sample, Tag
+import models
 from logrecord import LogRecord
+import models as md
 
-Base = declarative_base()
+# Base = declarative_base()
 
 
 class Transaction(Session):
-    def get_or_make_tag(self, tag_text: str) -> Optional[Tag]:
+    def get_or_make_tag(self, tag_text: str) -> Optional[md.Tag]:
         """Return the existing or create a new Tag"""
 
         if tag_text:
-            tag = self.scalar(select(Tag).where(
-                Tag.text == tag_text))
+            tag = self.scalar(select(md.Tag).where(
+                md.Tag.text == tag_text))
             if not tag:
-                tag = Tag(text=tag_text)
+                tag = md.Tag(text=tag_text)
                 self.add(tag)
             return tag
         else:
             return None
 
-    def _get_logrecord_tags(self, rec: LogRecord) -> List[Tag]:
+    def _get_logrecord_tags(self, rec: LogRecord) -> List[md.Tag]:
         """For a given LogRecord "rec" return the list of Tags"""
 
         tags = []
@@ -36,17 +37,17 @@ class Transaction(Session):
                 tags.append(self.get_or_make_tag(tag_text))
         return tags
 
-    def add_sample(self, sample: Sample, rec: LogRecord) -> None:
+    def add_sample(self, sample: md.Sample, rec: LogRecord) -> None:
         """Make a new Sample, add it to the "sample" table
 
         without session.commit() the changes will remain only in
         memory. Regularly, called within session_scope"""
 
-        tags = self._get_logrecord_tags(self, rec)
+        tags = self._get_logrecord_tags(rec)
         sample.tags.extend(tags)
         self.add(sample)
 
-    def update_sample(self, sample: Sample, rec: LogRecord) -> None:
+    def update_sample(self, sample: md.Sample, rec: LogRecord) -> None:
         """Update existing sample
 
         The function updates Sample in memory. Need session.commit() to
@@ -59,9 +60,9 @@ class Transaction(Session):
         sample.tags = tags
 
     def add_missing_tag(
-            self, tags: List[Tag],
+            self, tags: List[md.Tag],
             missing_tag_text: str = 'pee'
-    ) -> List[Tag]:
+    ) -> List[md.Tag]:
         """Add Tag(text=missing_tag_text) to the TAGS if missing
 
         return the TAGS"""
@@ -93,8 +94,8 @@ def session_scope(engine):
 def empty_tables(engine):
     '''Empty all tables (sample, tag, sample_tag)'''
 
-    Base.metadata.reflect(engine)
-    tables = reversed(Base.metadata.sorted_tables)
+    md.Base.metadata.reflect(engine)
+    tables = reversed(md.Base.metadata.sorted_tables)
     # table_names = (t.__tablename__ for t in tables)
     table_names = ('sample_tag', 'tag', 'sample')
     ans = input(f'The content of the tables {", ".join(table_names)} '
@@ -112,28 +113,16 @@ def empty_tables(engine):
 
 
 def initialize(engine):
-    """Initialize only sample_tag, tag, sample tables
+    """Initialize sample_tag, tag, and sample tables"""
 
-    Do not put any inital content in them."""
-
-    Base.metadata.create_all(engine)
-    # pee = Tag(text='pee')
-    # stool = Tag(text='stool')
-    # creatine = Tag(text='creatine')
-    # s1 = Sample(time='2024-03-28 19:00:15', volume=123)
-    # s2 = Sample(time='2024-03-29 20:00:20', volume=456)
-    # s3 = Sample(time='2024-03-31 18:15:00', volume=789)
-    # s1.tags.extend((pee, creatine))
-    # s2.tags.append(stool)
-    # s3.tags.append(pee)
-    # Session = sessionmaker(engine)  # noqa
-    # with Session() as session:
-    #     session.add_all((s1, s2))
-    #     session.commit()
+    with Session(engine) as session:
+        md.Base.metadata.create_all(engine)
+        session.commit()
+        session.close()
 
 
 def print_tables(day, engine):
     Session = sessionmaker(engine)  # noqa
     with Session() as session:
-        for sample in session.scalars(select(Sample)):
+        for sample in session.scalars(select(md.Sample)):
             print(sample)

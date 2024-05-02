@@ -4,15 +4,16 @@
 import sys
 from datetime import datetime
 from sqlalchemy import create_engine
-from sqlalchemy.orm import declarative_base
+# from sqlalchemy.orm import declarative_base
 from sqlalchemy.exc import SQLAlchemyError
 import argparse
 import argcomplete
 import test_log
 from sampletag_re import logrecords_generator
-from database import session_scope, initialize, empty_tables, print_tables
-from models import Sample
-Base = declarative_base()
+import database as db
+# from database import session_scope, initialize, empty_tables, print_tables
+import models as md
+# Base = declarative_base()
 
 
 def add_logfile_records(logfile: str, engine) -> None:
@@ -21,11 +22,11 @@ def add_logfile_records(logfile: str, engine) -> None:
     Read the record, make the Sample from it, add the Sample to the DB."""
 
     for rec in logrecords_generator(logfile):
-        with session_scope(engine) as session:
+        with db.session_scope(engine) as session:
             tags = session.add_missing_tag(session._get_logrecord_tags(rec),
                                            missing_tag_text='pee')
             kwds = {'time': rec.stamp, 'volume': rec.volume, 'text': rec.note}
-            sample = Sample(**kwds)
+            sample = md.Sample(**kwds)
             session.add(sample)
             sample.tags.extend(tags)
 
@@ -43,11 +44,11 @@ subparsers = parser.add_subparsers(
 parser_init = subparsers.add_parser(
     'init', help='Initialize DB. Make empty tables',
     aliases=['initialize'])
-parser_init.set_defaults(func=lambda _, engine: initialize(engine))
+parser_init.set_defaults(func=lambda _, engine: db.initialize(engine))
 parser_del = subparsers.add_parser(
     'del', help='Delete table contents', aliases=['empty'])
 # set_defaults func signature: (logfile: str, engine: Engine)
-parser_del.set_defaults(func=lambda ingnore, engine: empty_tables(engine))
+parser_del.set_defaults(func=lambda ingnore, engine: db.empty_tables(engine))
 parser_test = subparsers.add_parser(
     'test', help='Test consistency of log file(s)')
 parser_test.add_argument(
@@ -66,7 +67,8 @@ parser_print.add_argument(
     '--day', help='Print all log records of the day', default=datetime.now())
 # print_tables is define later. Withot lambda I'll get
 # NameError: name 'print_tables' is not defined
-parser_print.set_defaults(func=lambda day, engine: print_tables(day, engine))
+parser_print.set_defaults(
+    func=lambda day, engine: db.print_tables(day, engine))
 
 
 if __name__ == '__main__':
