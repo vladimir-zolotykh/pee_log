@@ -36,6 +36,7 @@ class LogViewer(tk.Tk):
         super().__init__()
         # self.db_con = con
         self.engine = engine
+        self.title(engine.url.database)
         # con.app = self          # use case: askyesno(parent=con.app,...
         self.form_vars = {}
         # Better not to mention data structure type in a variable name
