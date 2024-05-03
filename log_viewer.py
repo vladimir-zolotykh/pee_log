@@ -16,7 +16,7 @@ from combo_db import ComboDb
 from logrecord import LogRecord
 from sqlalchemy import select, create_engine, func
 from sqlalchemy.orm import sessionmaker
-from models import Sample
+import models as md
 from database import session_scope
 from database import initialize, Session
 import button_font
@@ -76,7 +76,7 @@ Click again to revert.""",
         script_menu = tk.Menu(self.script_btn, tearoff=0)
         self.script_btn.config(menu=script_menu)
         script_menu.add_command(
-            label='Blank sample', font=button_font.ButtonFont(),
+            label='Make blank sample', font=button_font.ButtonFont(),
             command=self.make_new)
         script_menu.add_command(
             label='pee', font=button_font.ButtonFont(),
@@ -84,14 +84,18 @@ Click again to revert.""",
         script_menu.add_command(
             label='IMET', font=button_font.ButtonFont(),
             command=lambda: self.make_tagged_sample('IMET'))
+        if engine.url.database == ':memory:':
+            script_menu.add_command(
+                label='Save as .txt', font=button_font.ButtonFont(),
+                command=self.save_mem_as_txt)
         Tooltip(self.script_btn, """\
-Initialize the fields above for the new sample""",
+Initialize the fields above for the selected action""",
                 font=button_font.TooltipFont())
         self.del_btn = tk.Button(
             buttons_bar, text='Del', command=self.del_log, state=tk.DISABLED)
         self.del_btn.grid(column=2, row=0)
         Tooltip(self.del_btn, """\
-Delete from the database the existing sample""",
+Delete the sample from the database""",
                 font=button_font.TooltipFont())
         # >>> tkFont.nametofont('TkDefaultFont').config()['family']
         # 'sans-serif'
@@ -100,6 +104,11 @@ Delete from the database the existing sample""",
             size = 6 if btn.cget('text').startswith('Narrow') else 8
             btn.grid(column=col, row=0)
             btn.config(font=button_font.ButtonFont(size=size))
+
+    def save_mem_as_txt(self):
+        with Session(self.engine) as session:
+            for sample in session.scalars(select(md.Sample)):
+                print(sample)
 
     def narrow_to_date(self):
         # stamp str -> datetime obj
@@ -157,9 +166,9 @@ Delete from the database the existing sample""",
         if narrow_to_date:
             # narrow_to_date datetime obj -> date str
             date_str = narrow_to_date.strftime('%Y-%m-%d')
-            on_date = (func.DATE(Sample.time) == date_str)
+            on_date = (func.DATE(md.Sample.time) == date_str)
         with Session(self.engine) as session:
-            for rec in session.scalars(select(Sample).where(on_date)):
+            for rec in session.scalars(select(md.Sample).where(on_date)):
                 labels = [''] * 3
                 for i in range(3):
                     try:
@@ -206,7 +215,7 @@ Delete from the database the existing sample""",
         """Set the form fields to defaults"""
 
         with Session(self.engine) as session:
-            id = session.scalar(select(func.max(Sample.id)))
+            id = session.scalar(select(func.max(md.Sample.id)))
         self.form_vars['id'].set(str(id + 1) if isinstance(id, int) else '1')
         self.form_vars['stamp'].set(datetime.now())
         self.del_btn.config(state=tk.DISABLED)
@@ -228,8 +237,8 @@ Delete from the database the existing sample""",
                     parent=self):
             Session = sessionmaker(self.engine)
             with Session() as session:
-                delete_me = session.scalar(select(Sample).where(
-                    Sample.id == rec.id))
+                delete_me = session.scalar(select(md.Sample).where(
+                    md.Sample.id == rec.id))
                 session.delete(delete_me)
                 session.commit()
             self.update_log_list()
@@ -240,15 +249,15 @@ Delete from the database the existing sample""",
         rec = self.get_logrecord()
         # with SA.Session(self.engine) as session:
         with session_scope(self.engine) as session:
-            sample = session.get(Sample, rec.id)
+            sample = session.get(md.Sample, rec.id)
             if sample:
                 if askyesno(f"{os.path.basename(__file__)}",
                             f"Log {rec.id} exists. Update? ",
                             parent=self):
                     session.update_sample(sample, rec)
             else:
-                sample = Sample(id=rec.id, time=rec.stamp,
-                                volume=rec.volume, text=rec.note)
+                sample = md.Sample(id=rec.id, time=rec.stamp,
+                                   volume=rec.volume, text=rec.note)
                 session.add_sample(sample, rec)
         self.update_log_list()
 
@@ -288,7 +297,7 @@ parser.add_argument('--db', help='Database file (.db)',
 parser.add_argument('--echo', action='store_true', default=False,
                     help='Print emitted SQL commands')
 parser.add_argument('--temp', help='''
-Db in memory. Could be copied to .db file before destroying''',
+Db in memory. Could be copied to .txt file before destroying''',
                     action='store_true')
 
 
