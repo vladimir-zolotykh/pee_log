@@ -128,26 +128,31 @@ Delete the sample from the database""",
             label=f'{label} ({self.logfile_date.strftime("%Y-%m-%d")})')
 
     def save_mem_as_txt(self):
-        now = datetime.now()
+        try:
+            logfile_date = self.logfile_date
+        except AttributeError:
+            logfile_date = None
+        if not logfile_date:
+            logfile_date = datetime.now().date()
         log_file = asksaveasfilename(
             title='wclog.db viewer', parent=self, initialdir='./LOG_DIARY',
-            initialfile=f'{now.strftime("%Y-%m-%d")}.txt',
+            initialfile=f'{logfile_date.strftime("%Y-%m-%d")}.txt',
             filetypes=[('Log files', '*.txt')])
         if log_file:
             with open(log_file, 'w') as fd:
-                today = datetime.now().date()
+                header_has_written = False
                 with Session(self.engine) as session:
                     for sample in session.scalars(select(md.Sample)):
-                        if today:
-                            print(today.strftime('%Y-%m-%d'), file=fd)
-                            today = None
-                        sample_day = datetime.strptime(
+                        if not header_has_written:
+                            print(logfile_date.strftime('%Y-%m-%d'), file=fd)
+                            header_has_written = True
+                        sample_date = datetime.strptime(
                             sample.time, '%Y-%m-%d %H:%M:%S').date()
-                        print(sample, file=fd)
-                        # if sample_day == today:
-                        #     pass
-                        # else:
-                        #     raise ValueError()
+                        if sample_date == logfile_date:
+                            print(sample, file=fd)
+                        else:
+                            raise ValueError(
+                                f'Sample date must be {logfile_date}')
 
     def narrow_to_date(self):
         # stamp str -> datetime obj
