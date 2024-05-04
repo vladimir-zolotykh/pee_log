@@ -9,6 +9,7 @@ from datetime import datetime
 import argparse
 import argcomplete
 import tkinter as tk
+from tkinter.filedialog import asksaveasfilename
 from tkinter.messagebox import askyesno
 from scrolled_treeview import ScrolledTreeview
 from time4 import Time4, Time4Var
@@ -106,9 +107,26 @@ Delete the sample from the database""",
             btn.config(font=button_font.ButtonFont(size=size))
 
     def save_mem_as_txt(self):
-        with Session(self.engine) as session:
-            for sample in session.scalars(select(md.Sample)):
-                print(sample)
+        now = datetime.now()
+        log_file = asksaveasfilename(
+            title='wclog.db viewer', parent=self, initialdir='./LOG_DIARY',
+            initialfile=f'{now.strftime("%Y-%m-%d")}.txt',
+            filetypes=[('Log files', '*.txt')])
+        if log_file:
+            with open(log_file, 'w') as fd:
+                today = datetime.now().date()
+                with Session(self.engine) as session:
+                    for sample in session.scalars(select(md.Sample)):
+                        if today:
+                            print(today.strftime('%Y-%m-%d'), file=fd)
+                            today = None
+                        sample_day = datetime.strptime(
+                            sample.time, '%Y-%m-%d %H:%M:%S').date()
+                        print(sample, file=fd)
+                        # if sample_day == today:
+                        #     pass
+                        # else:
+                        #     raise ValueError()
 
     def narrow_to_date(self):
         # stamp str -> datetime obj
@@ -290,7 +308,8 @@ Delete the sample from the database""",
 
 
 parser = argparse.ArgumentParser(
-    description="pee_log db veiwer",
+    prog='log_viewer.py',
+    description="wclog db viewer",
     formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 parser.add_argument('--db', help='Database file (.db)',
                     default='./wclog.db')
