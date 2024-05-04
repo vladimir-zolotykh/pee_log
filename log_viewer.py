@@ -87,6 +87,12 @@ Click again to revert.""",
             command=lambda: self.make_tagged_sample('IMET'))
         if engine.url.database == ':memory:':
             script_menu.add_command(
+                label='Set logfile date', font=button_font.ButtonFont(),
+                command=(lambda sm=script_menu, lt='Set logfile date':
+                         self.set_logfile_date(sm, lt)),
+                # command=self.set_logfile_date
+            )
+            script_menu.add_command(
                 label='Save as .txt', font=button_font.ButtonFont(),
                 command=self.save_mem_as_txt)
         Tooltip(self.script_btn, """\
@@ -105,6 +111,21 @@ Delete the sample from the database""",
             size = 6 if btn.cget('text').startswith('Narrow') else 8
             btn.grid(column=col, row=0)
             btn.config(font=button_font.ButtonFont(size=size))
+
+    def set_logfile_date(self, menu, label):
+        def menu_item_index(menu, label):
+            for i in range(menu.index("end")):
+                opt = menu.entryconfig(i)
+                if "label" in opt and opt["label"][4].startswith(label):
+                    return i
+            return None
+        self.logfile_date = datetime.strptime(self.get_var('stamp').get(),
+                                              '%Y-%m-%d %H:%M:%S').date()
+        label = ' '.join(label.split(maxsplit=3))
+        index = menu_item_index(menu, label)
+        menu.entryconfigure(
+            index,
+            label=f'{label} ({self.logfile_date.strftime("%Y-%m-%d")})')
 
     def save_mem_as_txt(self):
         now = datetime.now()
