@@ -65,9 +65,9 @@ class LogViewer(tk.Tk):
 Update the existing sample or
 create a new one""",
                 font=button_font.TooltipFont())
-        narrow_btn = tk.Button(buttons_bar,
-                               text='Narrow\nto date',
-                               command=self.narrow_to_date)
+        narrow_btn = tk.Button(buttons_bar, text='Narrow to date')
+        narrow_btn.config(command=(lambda nb=narrow_btn:
+                                   self.narrow_to_date(nb)))
         Tooltip(narrow_btn, """\
 Select/enter the date into "stamp" field click the button.
 Click again to revert.""",
@@ -108,7 +108,8 @@ Delete the sample from the database""",
         # 'sans-serif'
         for col, btn in enumerate((update_btn, narrow_btn, self.script_btn,
                                    self.del_btn)):
-            size = 6 if btn.cget('text').startswith('Narrow') else 8
+            # size = 6 if btn.cget('text').startswith('Narrow') else 8
+            size = 8
             btn.grid(column=col, row=0)
             btn.config(font=button_font.ButtonFont(size=size))
 
@@ -121,7 +122,6 @@ Delete the sample from the database""",
             return None
         self.logfile_date = datetime.strptime(self.get_var('stamp').get(),
                                               '%Y-%m-%d %H:%M:%S').date()
-        label = ' '.join(label.split(maxsplit=3))
         index = menu_item_index(menu, label)
         menu.entryconfigure(
             index,
@@ -154,8 +154,7 @@ Delete the sample from the database""",
                             raise ValueError(
                                 f'Sample date must be {logfile_date}')
 
-    def narrow_to_date(self):
-        # stamp str -> datetime obj
+    def narrow_to_date(self, button):
         if not hasattr(self, 'req_date'):
             setattr(self, 'req_date', None)
         try:
@@ -169,6 +168,10 @@ Delete the sample from the database""",
         _t = threading.Thread(target=self.update_log_list, args=(req_date, ))
         _t.start()
         self.req_date = req_date
+        text = ' '.join(button.cget('text').split()[:3])
+        if req_date:
+            text = f'{text} ({req_date.strftime("%Y-%m-%d")})'
+        button.config(text=text)
 
     def create_form_fields(self, form) -> int:
         """Create form fields and their StringVar -s
