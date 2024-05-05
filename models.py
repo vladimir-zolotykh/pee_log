@@ -17,7 +17,8 @@ sample_tag = Table(
 class Sample(Base):
     __tablename__ = 'sample'
     id = Column(Integer, primary_key=True)
-    time = Column(String, unique=True)
+    # time = Column(String, unique=True)
+    time = Column(String)
     volume = Column(Integer)
     text = Column(String)
     tags = relationship(
