@@ -108,8 +108,7 @@ Delete the sample from the database""",
         # 'sans-serif'
         for col, btn in enumerate((update_btn, narrow_btn, self.script_btn,
                                    self.del_btn)):
-            # size = 6 if btn.cget('text').startswith('Narrow') else 8
-            size = 8
+            size = 6 if btn.cget('text').startswith('Narrow') else 8
             btn.grid(column=col, row=0)
             btn.config(font=button_font.ButtonFont(size=size))
 
@@ -170,7 +169,7 @@ Delete the sample from the database""",
         self.req_date = req_date
         text = ' '.join(button.cget('text').split()[:3])
         if req_date:
-            text = f'{text} ({req_date.strftime("%Y-%m-%d")})'
+            text = f'{text}\n({req_date.strftime("%Y-%m-%d")})'
         button.config(text=text)
 
     def create_form_fields(self, form) -> int:
