@@ -263,7 +263,15 @@ Delete the sample from the database""",
         with Session(self.engine) as session:
             id = session.scalar(select(func.max(md.Sample.id)))
         self.form_vars['id'].set(str(id + 1) if isinstance(id, int) else '1')
-        self.form_vars['stamp'].set(datetime.now())
+        try:
+            logfile_date = self.logfile_date
+        except AttributeError:
+            logfile_date = None
+        now = datetime.now()
+        if logfile_date:
+            now = now.replace(year=logfile_date.year, month=logfile_date.month,
+                              day=logfile_date.day)
+        self.form_vars['stamp'].set(now)
         self.del_btn.config(state=tk.DISABLED)
 
     def make_tagged_sample(self, *tags):
