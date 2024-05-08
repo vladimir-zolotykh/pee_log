@@ -20,7 +20,7 @@ from sqlalchemy.orm import sessionmaker
 import models as md
 from database import session_scope
 from database import initialize, Session
-import button_font
+from wcfonts import wcfont
 from tooltip import Tooltip
 
 
@@ -64,53 +64,53 @@ class LogViewer(tk.Tk):
         Tooltip(update_btn, """\
 Update the existing sample or
 create a new one""",
-                font=button_font.TooltipFont())
+                font=wcfont('WcTooltipFont'))
         narrow_btn = tk.Button(buttons_bar, text='Narrow to date')
         narrow_btn.config(command=(lambda nb=narrow_btn:
                                    self.narrow_to_date(nb)))
         Tooltip(narrow_btn, """\
 Select/enter the date into "stamp" field click the button.
 Click again to revert.""",
-                font=button_font.TooltipFont())
+                font=wcfont('WcTooltipFont'))
         self.script_btn = tk.Menubutton(
             buttons_bar, text='Script', relief=tk.RAISED, bd=2)
         script_menu = tk.Menu(self.script_btn, tearoff=0)
         self.script_btn.config(menu=script_menu)
         script_menu.add_command(
-            label='Make blank sample', font=button_font.ButtonFont(),
+            label='Make blank sample', font=wcfont('WcButtonFont'),
             command=self.make_new)
         script_menu.add_command(
-            label='pee', font=button_font.ButtonFont(),
+            label='pee', font=wcfont('WcButtonFont'),
             command=lambda: self.make_tagged_sample('pee'))
         script_menu.add_command(
-            label='IMET', font=button_font.ButtonFont(),
+            label='IMET', font=wcfont('WcButtonFont'),
             command=lambda: self.make_tagged_sample('IMET'))
         if engine.url.database == ':memory:':
             script_menu.add_command(
-                label='Set logfile date', font=button_font.ButtonFont(),
+                label='Set logfile date', font=wcfont('WcButtonFont'),
                 command=(lambda sm=script_menu, lt='Set logfile date':
                          self.set_logfile_date(sm, lt)),
                 # command=self.set_logfile_date
             )
             script_menu.add_command(
-                label='Save as .txt', font=button_font.ButtonFont(),
+                label='Save as .txt', font=wcfont('WcButtonFont'),
                 command=self.save_mem_as_txt)
         Tooltip(self.script_btn, """\
 Initialize the fields above for the selected action""",
-                font=button_font.TooltipFont())
+                font=wcfont('WcTooltipFont'))
         self.del_btn = tk.Button(
             buttons_bar, text='Del', command=self.del_log, state=tk.DISABLED)
         self.del_btn.grid(column=2, row=0)
         Tooltip(self.del_btn, """\
 Delete the sample from the database""",
-                font=button_font.TooltipFont())
+                font=wcfont('WcTooltipFont'))
         # >>> tkFont.nametofont('TkDefaultFont').config()['family']
         # 'sans-serif'
         for col, btn in enumerate((update_btn, narrow_btn, self.script_btn,
                                    self.del_btn)):
-            size = 6 if btn.cget('text').startswith('Narrow') else 8
+            # size = 6 if btn.cget('text').startswith('Narrow') else 8
             btn.grid(column=col, row=0)
-            btn.config(font=button_font.ButtonFont(size=size))
+            btn.config(font=wcfont('WcButtonFont'))
 
     def set_logfile_date(self, menu, label):
         def menu_item_index(menu, label):

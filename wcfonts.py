@@ -1,23 +1,19 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 # PYTHON_ARGCOMPLETE_OK
-"""Usage:
-font = button_font.TooltipFont()
-font=button_font.TooltipFont()"""
-import tkinter.font as tkFont
+from typing import Literal, Dict
+from tkinter.font import Font
+font_config: Dict[str, Dict] = {
+    'WcButtonFont':  {'family': 'sans-serif', 'size': 8},
+    'WcMenuFont':    {'family': 'sans-serif', 'size': 8},
+    'WcTooltipFont': {'family': 'sans-serif', 'size': 8}}
+wcfonts = {}
 
 
-class SingletonFont(tkFont.Font):
-    _instances = {}
-
-    def __new__(cls, family='sans-serif', size=8):
-        if cls not in cls._instances:
-            cls._instances[cls] = super().__new__(cls)
-        return cls._instances[cls]
-
-    def __init__(self, family='sans-serif', size=8):
-        super().__init__(family=family, size=size)
-
-
-class ButtonFont(SingletonFont): pass  # noqa
-class TooltipFont(SingletonFont): pass  # noqa
+def wcfont(
+        font_name: Literal['WcButtonFont', 'WcTooltipFont', 'WcMenuFont']
+) -> Font:
+    if font_name not in wcfonts:
+        font = Font(name=font_name, **font_config[font_name])
+        wcfonts[font_name] = font
+    return wcfonts[font_name]
