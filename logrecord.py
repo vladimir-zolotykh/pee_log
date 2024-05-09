@@ -7,7 +7,7 @@
 from pydantic import BaseModel
 from datetime import datetime
 # from tkinter.messagebox import askyesno
-from typing import Optional
+from typing import Optional, List
 
 
 class LogRecord(BaseModel):
@@ -39,7 +39,9 @@ class LogRecord(BaseModel):
         def _strip_if(a):
             return a.strip() if isinstance(a, str) else a
 
-        opt = {k: _strip_if(v) for k, v in zip(cls.__fields__, values)}
+        fld_list: List[str] = list(cls.__annotations__.keys())
+        # opt = {k: _strip_if(v) for k, v in zip(cls.__fields__, values)}
+        opt = {k: _strip_if(v) for k, v in zip(fld_list, values)}
         volume = opt['volume']
         try:
             volume = int(opt['volume'])
@@ -50,7 +52,9 @@ class LogRecord(BaseModel):
 
     @classmethod
     def from_db(cls, db, values: list):
-        opt = {k: v for k, v in zip(cls.__fields__, values)}
+        fld_list: List[str] = list(cls.__annotations__.keys())
+        # opt = {k: v for k, v in zip(cls.__fields__, values)}
+        opt = {k: v for k, v in zip(fld_list, values)}
         for label_caption, label_id in opt.items():
             if label_caption.startswith('label'):
                 label_text = (db.labels.as_label(label_id)
