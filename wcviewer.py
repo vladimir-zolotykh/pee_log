@@ -15,7 +15,7 @@ from scrolled_treeview import ScrolledTreeview
 from time4 import Time4, Time4Var
 from combo_db import ComboDb
 from logrecord import LogRecord
-from sqlalchemy import select, create_engine, func, ColumnElement
+from sqlalchemy import select, create_engine, func, Column
 from sqlalchemy.orm import sessionmaker
 import models as md
 from database import session_scope
@@ -231,6 +231,10 @@ Delete the sample from the database""",
                     except IndexError:
                         t = ''
                     labels[i] = t
+
+                def get_vol(vol: Column[int]) -> Optional[int]:
+                    return int(vol) if vol is not None else vol
+
                 log = LogRecord(
                     id=int(rec.id),
                     stamp=datetime.strptime(str(rec.time),
@@ -238,7 +242,7 @@ Delete the sample from the database""",
                     label1=labels[0],
                     label2=labels[1],
                     label3=labels[2],
-                    volume=int(rec.volume),
+                    volume=get_vol(rec.volume),
                     note=str(rec.text) if rec.text else '')
                 self.log_list.insert_log(log)
         self.config(cursor='')
