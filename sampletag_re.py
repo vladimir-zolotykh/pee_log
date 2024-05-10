@@ -46,7 +46,12 @@ def parse_sample(sample_str: str, sample_date: datetime) -> LogRecord:
         time4 = m.group('time')
         if len(time4) < 4:
             time4 = '0' + time4
-        time = datetime.strptime(time4, '%H%M').time()
+        # what if time4 is 1270 vs 1720 ?
+        # ValueError: unconverted data remains: 0
+        try:
+            time = datetime.strptime(time4, '%H%M').time()
+        except ValueError as err:
+            raise ValueError(f'Invalide TIME4 "{time4}"') from err
         stamp_str = datetime.combine(sample_date, time).strftime(
             '%Y-%m-%d %H:%M:00')
         label_text = [''] * 3
