@@ -4,12 +4,12 @@
 # from dataclasses import dataclass
 import os
 import threading
-from typing import Optional, Type
+from typing import Optional
 from datetime import datetime, date
 import argparse
 import argcomplete
 import tkinter as tk
-from tkinter.filedialog import asksaveasfilename
+from tkinter.filedialog import askopenfilename, asksaveasfilename
 from tkinter.messagebox import askyesno
 from scrolled_treeview import ScrolledTreeview
 from time4 import Time4, Time4Var
@@ -22,6 +22,7 @@ from database import session_scope
 from database import initialize, Session
 from wcfonts import wcfont
 from tooltip import Tooltip
+from wclog import add_logfile_records
 
 
 class LogViewer(tk.Tk):
@@ -93,6 +94,9 @@ Click again to revert.""",
                 # command=self.set_logfile_date
             )
             script_menu.add_command(
+                label='Load log file', font=wcfont('WcButtonFont'),
+                command=lambda: self.load_log_file(self.engine))
+            script_menu.add_command(
                 label='Save as .txt', font=wcfont('WcButtonFont'),
                 command=self.save_mem_as_txt)
         Tooltip(self.script_btn, """\
@@ -111,6 +115,16 @@ Delete the sample from the database""",
             # size = 6 if btn.cget('text').startswith('Narrow') else 8
             btn.grid(column=col, row=0)
             btn.config(font=wcfont('WcButtonFont'))
+
+    def load_log_file(self, engine):
+        now = datetime.now()
+        logfile = askopenfilename(
+            title='wclog.db viewer', parent=self, initialdir='./LOG_DIARY',
+            initialfile=f'{now.strftime("%Y-%m-%d")}.txt',
+            filetypes=[('Log files', '*.txt')])
+        if logfile:
+            add_logfile_records(logfile, engine)
+            self.update_log_list()
 
     def set_logfile_date(self, menu, label):
         def menu_item_index(menu, label):
