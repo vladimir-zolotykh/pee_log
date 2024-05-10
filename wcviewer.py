@@ -212,13 +212,18 @@ Delete the sample from the database""",
         self.log_list.delete(*self.log_list.get_children(''))
         # Session = SA.sessionmaker(self.engine)
         # on_date: bool = True    # all samples
-        on_date: bool = True
+        # on_date: bool = True
         if narrow_to_date:
-            # narrow_to_date datetime obj -> date str
             date_str = narrow_to_date.strftime('%Y-%m-%d')
-            on_date = (func.DATE(md.Sample.time) == date_str)
+            # narrow_to_date datetime obj -> date str
+            # on_date = (func.DATE(md.Sample.time) == date_str)
+            query = select(md.Sample).where(
+                func.DATE(md.Sample.time) == date_str)
+        else:
+            query = select(md.Sample)
         with Session(self.engine) as session:
-            for rec in session.scalars(select(md.Sample).where(on_date)):
+            # for rec in session.scalars(select(md.Sample).where(on_date)):
+            for rec in session.scalars(query):
                 labels = [''] * 3
                 for i in range(3):
                     try:
@@ -227,13 +232,14 @@ Delete the sample from the database""",
                         t = ''
                     labels[i] = t
                 log = LogRecord(
-                    id=rec.id,
-                    stamp=rec.time,
+                    id=int(rec.id),
+                    stamp=datetime.strptime(str(rec.time),
+                                            '%Y-%m-%d %H:%M:%S'),
                     label1=labels[0],
                     label2=labels[1],
                     label3=labels[2],
-                    volume=rec.volume,
-                    note=rec.text if rec.text else '')
+                    volume=int(rec.volume),
+                    note=str(rec.text) if rec.text else '')
                 self.log_list.insert_log(log)
         self.config(cursor='')
 
@@ -322,7 +328,7 @@ Delete the sample from the database""",
     def update_fields(self, log_rec: LogRecord) -> None:
         """Update form Entry values"""
 
-        for fld_name in LogRecord.__fields__:
+        for fld_name in LogRecord.__annotations__:
             val = getattr(log_rec, fld_name)
             if fld_name == 'volume' and val is None:
                 val = ''
@@ -332,7 +338,7 @@ Delete the sample from the database""",
         '''Get 'form' fields, make a LogRecord from them, return'''
 
         values = []
-        for fld_name in LogRecord.__fields__:
+        for fld_name in LogRecord.__annotations__:
             var = self.get_var(fld_name)
             if fld_name.startswith('label'):
                 values.append(var.get())
