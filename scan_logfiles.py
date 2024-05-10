@@ -100,15 +100,19 @@ def netvolume_replace(logname: str, backup_ext='.bak') -> None:
     TARE_WEIGHT = 25
     records = []
     num_lines_changed = 0
-    volume_previous = TARE_WEIGHT
+    volume_previous: int = TARE_WEIGHT
     with open(logname) as f:
         for rec in logrecords_generator(logname, include_header=True):
             if isinstance(rec, LogRecord):
                 if rec.has_volume:
-                    if rec.volume < volume_previous:
+                    vol: int
+                    if rec.volume is not None:
+                        vol = rec.volume
+                    if vol < volume_previous:
                         volume_previous = 25
-                    rec.volume, volume_previous = (
-                        rec.volume - volume_previous, rec.volume)
+                    vol, volume_previous = (
+                        vol - volume_previous, vol)
+                    rec.volume = vol
                     num_lines_changed += 1
             else:               # header line w/ trailing \n
                 rec = rec.rstrip()
