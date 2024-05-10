@@ -4,8 +4,8 @@
 # from dataclasses import dataclass
 import os
 import threading
-from typing import Optional
-from datetime import datetime
+from typing import Optional, Type
+from datetime import datetime, date
 import argparse
 import argcomplete
 import tkinter as tk
@@ -15,7 +15,7 @@ from scrolled_treeview import ScrolledTreeview
 from time4 import Time4, Time4Var
 from combo_db import ComboDb
 from logrecord import LogRecord
-from sqlalchemy import select, create_engine, func
+from sqlalchemy import select, create_engine, func, ColumnElement
 from sqlalchemy.orm import sessionmaker
 import models as md
 from database import session_scope
@@ -177,7 +177,10 @@ Delete the sample from the database""",
 
         see self.form_vars dict
         """
-        for row, fld_name in enumerate(LogRecord.__fields__):
+        row: int
+        fld_name: str
+        # for row, fld_name in enumerate(LogRecord.__fields__):
+        for row, fld_name in enumerate(list(LogRecord.__annotations__.keys())):
             _ = tk.Label(form, text=fld_name)
             _.grid(column=0, row=row, sticky=tk.E)
             var = self.get_var(fld_name)
@@ -200,7 +203,7 @@ Delete the sample from the database""",
 
     def update_log_list(
             self,
-            narrow_to_date: Optional[datetime.date] = None  # %Y-%m-%d
+            narrow_to_date: Optional[date] = None  # %Y-%m-%d
     ):
         """Update Treeview (.log_list)
 
@@ -208,7 +211,8 @@ Delete the sample from the database""",
 
         self.log_list.delete(*self.log_list.get_children(''))
         # Session = SA.sessionmaker(self.engine)
-        on_date = True          # all samples
+        # on_date: bool = True    # all samples
+        on_date: bool = True
         if narrow_to_date:
             # narrow_to_date datetime obj -> date str
             date_str = narrow_to_date.strftime('%Y-%m-%d')
