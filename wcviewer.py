@@ -118,8 +118,8 @@ Delete the sample from the database""",
             # size = 6 if btn.cget('text').startswith('Narrow') else 8
             btn.grid(column=col, row=0)
             btn.config(font=wcfont('WcButtonFont'))
-        _ = ttk.Separator(self, orient=tk.VERTICAL)
-        _.grid(column=2, row=0, sticky="ns", padx=4, pady=4)
+        _sep = ttk.Separator(self, orient=tk.VERTICAL)
+        _sep.grid(column=2, row=0, sticky="ns", padx=4, pady=4)
         summary_box = tk.Frame(self)
         self.columnconfigure(3, weight=1)
         summary_box.grid(column=3, row=0, sticky=tk.NSEW)
@@ -128,9 +128,9 @@ Delete the sample from the database""",
 
     def make_summary_box(self, box: tk.Frame) -> None:
         tk.Label(box, text='Date:').grid(column=0, row=0, sticky=tk.E)
-        _ = tk.Entry(box, width=12)
-        _.insert(0, '2024-02-12')
-        _.grid(column=1, row=0, sticky=tk.W)
+        _date = tk.Entry(box, width=12)
+        _date.insert(0, '2024-02-12')
+        _date.grid(column=1, row=0, sticky=tk.W)
         tk.Label(box, text='Count:').grid(column=0, row=1, sticky=tk.E)
         num_logs = tk.Entry(box, width=4)
         num_logs.grid(column=1, row=1, sticky=tk.W)
@@ -140,7 +140,12 @@ Delete the sample from the database""",
         tags_text = tk.Text(box)
         tags_text.grid(column=1, row=2, sticky=tk.W)
         tags_text.insert('0.0', 'IMET\npee\nMefenamic_acid')
-        tags_text.config(width=7, height=5, state='disabled')
+        tags_text.config(width=20, height=5, state='disabled')
+        tk.Label(box, text='Notes:').grid(column=0, row=3, sticky=tk.E)
+        notes_text = tk.Text(box)
+        notes_text.grid(column=1, row=3, sticky=tk.W)
+        notes_text.insert('0.0', 'Lost sefl control\nСильно болит голова')
+        notes_text.config(width=20, height=5, state='disabled')
 
     def load_log_file(self, engine):
         now = datetime.now()
