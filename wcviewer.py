@@ -45,7 +45,7 @@ class LogViewer(tk.Tk):
         log_list = ScrolledTreeview(self, columns=('id', 'stamp', 'label',
                                                    'volume', 'note'),
                                     selectmode='browse')
-        self.columnconfigure(0, weight=1)
+        self.columnconfigure(0, weight=3)
         self.rowconfigure(0, weight=1)
         log_list.grid(column=0, row=0, sticky=tk.NSEW)
         # .bind: two handlers are called: ScrolledTreeview.on_select,
@@ -58,6 +58,8 @@ class LogViewer(tk.Tk):
         row = self.create_form_fields(form)
         row += 1
         buttons_bar = tk.Frame(form)
+        # Make the button row at the bottom (by having resizable empty
+        # ROW (7) )
         form.rowconfigure(row, weight=1)
         buttons_bar.grid(column=0, row=row, columnspan=2, sticky=tk.S)
         update_btn = tk.Button(buttons_bar,
@@ -115,6 +117,18 @@ Delete the sample from the database""",
             # size = 6 if btn.cget('text').startswith('Narrow') else 8
             btn.grid(column=col, row=0)
             btn.config(font=wcfont('WcButtonFont'))
+        summary_box = tk.Frame(self)
+        self.columnconfigure(2, weight=1)
+        summary_box.grid(column=2, row=0, sticky=tk.NSEW)
+        summary_box.columnconfigure(1, weight=1)
+        self.make_summary_box(summary_box)
+
+    def make_summary_box(self, box: tk.Frame) -> None:
+        tk.Label(box, text='Log count').grid(column=0, row=0)
+        num_logs = tk.Entry(box, width=4)
+        num_logs.grid(column=1, row=0)
+        num_logs.insert(0, '23')
+        num_logs.config(state='readonly')
 
     def load_log_file(self, engine):
         now = datetime.now()
