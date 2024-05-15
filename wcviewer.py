@@ -9,6 +9,7 @@ from datetime import datetime, date
 import argparse
 import argcomplete
 import tkinter as tk
+from tkinter import ttk
 from tkinter.filedialog import askopenfilename, asksaveasfilename
 from tkinter.messagebox import askyesno
 from scrolled_treeview import ScrolledTreeview
@@ -117,9 +118,11 @@ Delete the sample from the database""",
             # size = 6 if btn.cget('text').startswith('Narrow') else 8
             btn.grid(column=col, row=0)
             btn.config(font=wcfont('WcButtonFont'))
+        _ = ttk.Separator(self, orient=tk.VERTICAL)
+        _.grid(column=2, row=0, sticky="ns", padx=4, pady=4)
         summary_box = tk.Frame(self)
-        self.columnconfigure(2, weight=1)
-        summary_box.grid(column=2, row=0, sticky=tk.NSEW)
+        self.columnconfigure(3, weight=1)
+        summary_box.grid(column=3, row=0, sticky=tk.NSEW)
         summary_box.columnconfigure(1, weight=1)
         self.make_summary_box(summary_box)
 
