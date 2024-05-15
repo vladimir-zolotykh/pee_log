@@ -124,11 +124,20 @@ Delete the sample from the database""",
         self.make_summary_box(summary_box)
 
     def make_summary_box(self, box: tk.Frame) -> None:
-        tk.Label(box, text='Log count').grid(column=0, row=0)
+        tk.Label(box, text='Date:').grid(column=0, row=0, sticky=tk.E)
+        _ = tk.Entry(box, width=12)
+        _.insert(0, '2024-02-12')
+        _.grid(column=1, row=0, sticky=tk.W)
+        tk.Label(box, text='Count:').grid(column=0, row=1, sticky=tk.E)
         num_logs = tk.Entry(box, width=4)
-        num_logs.grid(column=1, row=0)
+        num_logs.grid(column=1, row=1, sticky=tk.W)
         num_logs.insert(0, '23')
         num_logs.config(state='readonly')
+        tk.Label(box, text='Tags:').grid(column=0, row=2, sticky=tk.E)
+        tags_text = tk.Text(box)
+        tags_text.grid(column=1, row=2, sticky=tk.W)
+        tags_text.insert('0.0', 'IMET\npee\nMefenamic_acid')
+        tags_text.config(width=7, height=5, state='disabled')
 
     def load_log_file(self, engine):
         now = datetime.now()
