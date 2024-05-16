@@ -24,6 +24,7 @@ from database import initialize, Session
 from wcfonts import wcfont
 from tooltip import Tooltip
 from wclog import add_logfile_records
+from summary_box import SummaryBox
 
 
 class LogViewer(tk.Tk):
@@ -120,32 +121,37 @@ Delete the sample from the database""",
             btn.config(font=wcfont('WcButtonFont'))
         _sep = ttk.Separator(self, orient=tk.VERTICAL)
         _sep.grid(column=2, row=0, sticky="ns", padx=4, pady=4)
-        summary_box = tk.Frame(self)
+        summary_frame = tk.Frame(self)
         self.columnconfigure(3, weight=1)
-        summary_box.grid(column=3, row=0, sticky=tk.NSEW)
-        summary_box.columnconfigure(1, weight=1)
-        self.make_summary_box(summary_box)
+        summary_frame.grid(column=3, row=0, sticky=tk.NSEW)
+        summary_frame.columnconfigure(1, weight=1)
+        self.summary_box = SummaryBox(summary_frame)
+        self.summary_box.count = '23'
+        self.summary_box.date = '2024-02-12'
+        self.summary_box.tag = 'IMET\npee\nMefenamic_acid'.split('\n')
+        self.summary_box.note = 'Lost sefl control\nСильно болит голова'.split('\n')
+        # self.make_summary_box(summary_frame)
 
-    def make_summary_box(self, box: tk.Frame) -> None:
-        tk.Label(box, text='Date:').grid(column=0, row=0, sticky=tk.E)
-        _date = tk.Entry(box, width=12)
-        _date.insert(0, '2024-02-12')
-        _date.grid(column=1, row=0, sticky=tk.W)
-        tk.Label(box, text='Count:').grid(column=0, row=1, sticky=tk.E)
-        num_logs = tk.Entry(box, width=4)
-        num_logs.grid(column=1, row=1, sticky=tk.W)
-        num_logs.insert(0, '23')
-        num_logs.config(state='readonly')
-        tk.Label(box, text='Tags:').grid(column=0, row=2, sticky=tk.E)
-        tags_text = tk.Text(box)
-        tags_text.grid(column=1, row=2, sticky=tk.W)
-        tags_text.insert('0.0', 'IMET\npee\nMefenamic_acid')
-        tags_text.config(width=20, height=5, state='disabled')
-        tk.Label(box, text='Notes:').grid(column=0, row=3, sticky=tk.E)
-        notes_text = tk.Text(box)
-        notes_text.grid(column=1, row=3, sticky=tk.W)
-        notes_text.insert('0.0', 'Lost sefl control\nСильно болит голова')
-        notes_text.config(width=20, height=5, state='disabled')
+    # def make_summary_box(self, box: tk.Frame) -> None:
+    #     tk.Label(box, text='Date:').grid(column=0, row=0, sticky=tk.E)
+    #     _date = tk.Entry(box, width=12)
+    #     _date.insert(0, '2024-02-12')
+    #     _date.grid(column=1, row=0, sticky=tk.W)
+    #     tk.Label(box, text='Count:').grid(column=0, row=1, sticky=tk.E)
+    #     num_logs = tk.Entry(box, width=4)
+    #     num_logs.grid(column=1, row=1, sticky=tk.W)
+    #     num_logs.insert(0, '23')
+    #     num_logs.config(state='readonly')
+    #     tk.Label(box, text='Tags:').grid(column=0, row=2, sticky=tk.E)
+    #     tags_text = tk.Text(box)
+    #     tags_text.grid(column=1, row=2, sticky=tk.W)
+    #     tags_text.insert('0.0', 'IMET\npee\nMefenamic_acid')
+    #     tags_text.config(width=20, height=5, state='disabled')
+    #     tk.Label(box, text='Notes:').grid(column=0, row=3, sticky=tk.E)
+    #     notes_text = tk.Text(box)
+    #     notes_text.grid(column=1, row=3, sticky=tk.W)
+    #     notes_text.insert('0.0', 'Lost sefl control\nСильно болит голова')
+    #     notes_text.config(width=20, height=5, state='disabled')
 
     def load_log_file(self, engine):
         now = datetime.now()
