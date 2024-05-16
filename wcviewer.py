@@ -24,7 +24,7 @@ from database import initialize, Session
 from wcfonts import wcfont
 from tooltip import Tooltip
 from wclog import add_logfile_records
-from summary_box import SummaryBox
+from summary_box import SummaryBox, summary_var
 
 
 class LogViewer(tk.Tk):
@@ -126,10 +126,16 @@ Delete the sample from the database""",
         summary_frame.grid(column=3, row=0, sticky=tk.NSEW)
         summary_frame.columnconfigure(1, weight=1)
         self.summary_box = SummaryBox(summary_frame)
-        self.summary_box.count = '23'
-        self.summary_box.date = '2024-02-12'
-        self.summary_box.tag = 'IMET\npee\nMefenamic_acid'.split('\n')
-        self.summary_box.note = 'Lost sefl control\nСильно болит голова'.split('\n')
+        with summary_var(self.summary_box) as sb:
+            sb.count = '23'
+            sb.date = '2024-02-12'
+            sb.tag = 'IMET\npee\nMefenamic_acid'.split('\n')
+            sb.note = 'Lost sefl control\nСильно болит голова'.split('\n')
+
+        # self.summary_box.count = '23'
+        # self.summary_box.date = '2024-02-12'
+        # self.summary_box.tag = 'IMET\npee\nMefenamic_acid'.split('\n')
+        # self.summary_box.note = 'Lost sefl control\nСильно болит голова'.split('\n')
         # self.make_summary_box(summary_frame)
 
     # def make_summary_box(self, box: tk.Frame) -> None:

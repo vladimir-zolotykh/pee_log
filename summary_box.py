@@ -74,3 +74,8 @@ class SummaryBox():
     def note(self, value: List[str]) -> None:
         with text_state(self.note_text, 'normal') as text:
             text.insert('0.0', '\n'.join(value))
+
+
+@contextmanager
+def summary_var(summary_box: SummaryBox) -> SummaryBox:
+    yield summary_box
