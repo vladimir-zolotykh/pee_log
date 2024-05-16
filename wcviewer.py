@@ -132,33 +132,6 @@ Delete the sample from the database""",
             sb.tag = 'IMET\npee\nMefenamic_acid'.split('\n')
             sb.note = 'Lost sefl control\nСильно болит голова'.split('\n')
 
-        # self.summary_box.count = '23'
-        # self.summary_box.date = '2024-02-12'
-        # self.summary_box.tag = 'IMET\npee\nMefenamic_acid'.split('\n')
-        # self.summary_box.note = 'Lost sefl control\nСильно болит голова'.split('\n')
-        # self.make_summary_box(summary_frame)
-
-    # def make_summary_box(self, box: tk.Frame) -> None:
-    #     tk.Label(box, text='Date:').grid(column=0, row=0, sticky=tk.E)
-    #     _date = tk.Entry(box, width=12)
-    #     _date.insert(0, '2024-02-12')
-    #     _date.grid(column=1, row=0, sticky=tk.W)
-    #     tk.Label(box, text='Count:').grid(column=0, row=1, sticky=tk.E)
-    #     num_logs = tk.Entry(box, width=4)
-    #     num_logs.grid(column=1, row=1, sticky=tk.W)
-    #     num_logs.insert(0, '23')
-    #     num_logs.config(state='readonly')
-    #     tk.Label(box, text='Tags:').grid(column=0, row=2, sticky=tk.E)
-    #     tags_text = tk.Text(box)
-    #     tags_text.grid(column=1, row=2, sticky=tk.W)
-    #     tags_text.insert('0.0', 'IMET\npee\nMefenamic_acid')
-    #     tags_text.config(width=20, height=5, state='disabled')
-    #     tk.Label(box, text='Notes:').grid(column=0, row=3, sticky=tk.E)
-    #     notes_text = tk.Text(box)
-    #     notes_text.grid(column=1, row=3, sticky=tk.W)
-    #     notes_text.insert('0.0', 'Lost sefl control\nСильно болит голова')
-    #     notes_text.config(width=20, height=5, state='disabled')
-
     def load_log_file(self, engine):
         now = datetime.now()
         logfile = askopenfilename(

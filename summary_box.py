@@ -22,24 +22,20 @@ class SummaryBox():
         date = tk.Entry(box, width=12, textvariable=self.date_var,
                         state='readonly')
         date.grid(column=1, row=0, sticky=tk.W)
-        # self.date = '2024-02-12'
 
         tk.Label(box, text='Count').grid(column=0, row=1, sticky=tk.E)
         self.count_var = tk.StringVar()
         count = tk.Entry(box, width=4, textvariable=self.count_var,
                          state='readonly')
         count.grid(column=1, row=1, sticky=tk.W)
-        # self.count = '23'
 
         tk.Label(box, text='Tag').grid(column=0, row=2, sticky=tk.E)
         self.tag_text = tk.Text(box, width=20, height=5, state='disabled')
         self.tag_text.grid(column=1, row=2, sticky=tk.W)
-        # self.tag = 'IMET\npee\nMefenamic_acid'.split('\n')
 
         tk.Label(box, text='Note').grid(column=0, row=3, sticky=tk.E)
         self.note_text = tk.Text(box, width=20, height=5, state='disabled')
         self.note_text.grid(column=1, row=3, sticky=tk.W)
-        # self.note = 'Lost sefl control\nСильно болит голова'.split('\n')
 
     @property
     def date(self) -> str:
