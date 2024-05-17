@@ -2,12 +2,15 @@
 # -*- coding: utf-8 -*-
 # PYTHON_ARGCOMPLETE_OK
 from contextlib import contextmanager
-from sqlalchemy import select
+from sqlalchemy import select, func
+from sqlalchemy.engine import Engine
 from sqlalchemy.orm import sessionmaker, Session
 from sqlalchemy.exc import SQLAlchemyError
 from typing import List, Optional
+from datetime import datetime
 import models
 from logrecord import LogRecord
+from summary_box import SummaryBox
 import models as md
 
 # Base = declarative_base()
@@ -126,3 +129,14 @@ def print_tables(day, engine):
     with Session() as session:
         for sample in session.scalars(select(md.Sample)):
             print(sample)
+
+
+def update_summary_box(
+        engine: Engine, summary_box: SummaryBox, date: datetime
+) -> None:
+    with Session(engine) as session:
+        date_str = date.strftime('%Y-%m-%d')
+        query = select(func.COUNT(md.Sample.time)).where(
+            func.DATE(md.Sample.time) == date_str)
+        count = session.scalar(query)
+        summary_box.count = count
