@@ -19,8 +19,9 @@ from logrecord import LogRecord
 from sqlalchemy import select, create_engine, func, Column
 from sqlalchemy.orm import sessionmaker
 import models as md
-from database import session_scope
-from database import initialize, Session
+import database as db
+# from database import session_scope
+# from database import initialize, Session
 from wcfonts import wcfont
 from tooltip import Tooltip
 from wclog import add_logfile_records
@@ -171,7 +172,7 @@ Delete the sample from the database""",
         if log_file:
             with open(log_file, 'w') as fd:
                 header_has_written = False
-                with Session(self.engine) as session:
+                with db.Session(self.engine) as session:
                     for sample in session.scalars(select(md.Sample)):
                         if not header_has_written:
                             print(logfile_date.strftime('%Y-%m-%d'), file=fd)
@@ -203,6 +204,7 @@ Delete the sample from the database""",
         text = ' '.join(button.cget('text').split()[:3])
         if req_date:
             text = f'{text}\n({req_date.strftime("%Y-%m-%d")})'
+            db.update_summary_box(self.engine, self.summary_box, self.req_date)
         button.config(text=text)
 
     def create_form_fields(self, form) -> int:
@@ -254,7 +256,7 @@ Delete the sample from the database""",
                 func.DATE(md.Sample.time) == date_str)
         else:
             query = select(md.Sample)
-        with Session(self.engine) as session:
+        with db.Session(self.engine) as session:
             # for rec in session.scalars(select(md.Sample).where(on_date)):
             for rec in session.scalars(query):
                 labels = [''] * 3
@@ -307,7 +309,7 @@ Delete the sample from the database""",
     def make_new(self):
         """Set the form fields to defaults"""
 
-        with Session(self.engine) as session:
+        with db.Session(self.engine) as session:
             id = session.scalar(select(func.max(md.Sample.id)))
         self.form_vars['id'].set(str(id + 1) if isinstance(id, int) else '1')
         try:
@@ -349,7 +351,7 @@ Delete the sample from the database""",
 
         rec = self.get_logrecord()
         # with SA.Session(self.engine) as session:
-        with session_scope(self.engine) as session:
+        with db.session_scope(self.engine) as session:
             sample = session.get(md.Sample, rec.id)
             if sample:
                 if askyesno(f"{os.path.basename(__file__)}",
@@ -409,7 +411,7 @@ if __name__ == '__main__':
     database_url = ('sqlite:///:memory:' if args.temp
                     else f'sqlite:///{args.db}')
     engine = create_engine(database_url, echo=args.echo)
-    initialize(engine)
+    db.initialize(engine)
     v = LogViewer(engine)
     # create_engine(database_url, echo=args.echo))
     v.mainloop()
