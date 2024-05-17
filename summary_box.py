@@ -1,13 +1,16 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 # PYTHON_ARGCOMPLETE_OK
-from typing import List, Literal
+from typing import List, Literal, Iterator
+from typing_extensions import Never
 from contextlib import contextmanager
 import tkinter as tk
 
 
 @contextmanager
-def text_state(text: tk.Text, state: Literal['normal', 'disabled']) -> tk.Text:
+def text_state(
+        text: tk.Text, state: Literal['normal', 'disabled']
+) -> Iterator[tk.Text]:
     prev_state = text.cget('state')
     text.config(state=state)
     yield text
@@ -55,7 +58,7 @@ class SummaryBox():
 
     @property
     def tag(self) -> List[str]:
-        return self.tags_text.get().split('\n')
+        return self.tag_text.get('0.0', tk.END).split('\n')
 
     @tag.setter
     def tag(self, value: List[str]) -> None:
@@ -73,5 +76,5 @@ class SummaryBox():
 
 
 @contextmanager
-def summary_var(summary_box: SummaryBox) -> SummaryBox:
+def summary_var(summary_box: SummaryBox) -> Iterator[SummaryBox]:
     yield summary_box
