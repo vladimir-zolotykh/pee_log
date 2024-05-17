@@ -11,7 +11,7 @@ import argcomplete
 import tkinter as tk
 from tkinter import ttk
 from tkinter.filedialog import askopenfilename, asksaveasfilename
-from tkinter.messagebox import askyesno
+from tkinter.messagebox import askyesno, showwarning
 from scrolled_treeview import ScrolledTreeview
 from time4 import Time4, Time4Var
 from combo_db import ComboDb
@@ -46,6 +46,7 @@ class LogViewer(tk.Tk):
         # Better not to mention data structure type in a variable name
         log_list = ScrolledTreeview(self, columns=('id', 'stamp', 'label',
                                                    'volume', 'note'),
+                                    height=30,
                                     selectmode='browse')
         self.columnconfigure(0, weight=3)
         self.rowconfigure(0, weight=1)
@@ -189,8 +190,10 @@ Delete the sample from the database""",
         try:
             req_date = datetime.strptime(
                 self.get_var('stamp').get(), '%Y-%m-%d %H:%M:%S')
-        except ValueError:
-            req_date = None
+        except ValueError as exc:
+            showwarning(title=button.cget('text'), parent=self,
+                        message=str(exc))
+            return
         if self.req_date == req_date:
             req_date = None
         self.config(cursor='watch')
