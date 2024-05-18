@@ -30,7 +30,7 @@ class Transaction(Session):
         else:
             return None
 
-    def _get_logrecord_tags(self, rec: LogRecord) -> List[md.Tag]:
+    def _get_logrecord_tags(self, rec: LogRecord) -> List[Optional[md.Tag]]:
         """For a given LogRecord "rec" return the list of Tags"""
 
         tags = []
@@ -74,7 +74,8 @@ class Transaction(Session):
             if tag.text == missing_tag_text:
                 return tags
         new_tag = self.get_or_make_tag(missing_tag_text)
-        tags.insert(0, new_tag)
+        if new_tag:
+            tags.insert(0, new_tag)
         return tags
 
 
@@ -139,4 +140,5 @@ def update_summary_box(
         query = select(func.COUNT(md.Sample.time)).where(
             func.DATE(md.Sample.time) == date_str)
         count = session.scalar(query)
-        summary_box.count = count
+        if count:
+            summary_box.count = str(count)
