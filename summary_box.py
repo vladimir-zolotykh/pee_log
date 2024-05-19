@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 # PYTHON_ARGCOMPLETE_OK
 from typing import List, Literal, Iterator
-from typing_extensions import Never
 from contextlib import contextmanager
 import tkinter as tk
 
@@ -63,7 +62,8 @@ class SummaryBox():
     @tag.setter
     def tag(self, value: List[str]) -> None:
         with text_state(self.tag_text, 'normal') as text:
-            text.insert('0.0', '\n'.join(value))
+            text.delete('1.0', tk.END)
+            text.insert('1.0', '\n'.join(value))
 
     @property
     def note(self) -> List[str]:
@@ -72,7 +72,8 @@ class SummaryBox():
     @note.setter
     def note(self, value: List[str]) -> None:
         with text_state(self.note_text, 'normal') as text:
-            text.insert('0.0', '\n'.join(value))
+            text.delete('1.0', tk.END)
+            text.insert('1.0', '\n'.join(value))
 
 
 @contextmanager
