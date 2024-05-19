@@ -17,20 +17,17 @@ import models as md
 
 
 class Transaction(Session):
-    def get_or_make_tag(self, tag_text: str) -> Optional[md.Tag]:
+    def get_or_make_tag(self, tag_text: str) -> md.Tag:
         """Return the existing or create a new Tag"""
 
-        if tag_text:
-            tag = self.scalar(select(md.Tag).where(
-                md.Tag.text == tag_text))
-            if not tag:
-                tag = md.Tag(text=tag_text)
-                self.add(tag)
-            return tag
-        else:
-            return None
+        tag = self.scalar(select(md.Tag).where(
+            md.Tag.text == tag_text))
+        if not tag:
+            tag = md.Tag(text=tag_text)
+            self.add(tag)
+        return tag
 
-    def _get_logrecord_tags(self, rec: LogRecord) -> List[Optional[md.Tag]]:
+    def _get_logrecord_tags(self, rec: LogRecord) -> List[md.Tag]:
         """For a given LogRecord "rec" return the list of Tags"""
 
         tags = []
@@ -56,7 +53,7 @@ class Transaction(Session):
         The function updates Sample in memory. Need session.commit() to
         "flush" data into the persistent db"""
 
-        sample.time = rec.stamp
+        sample.time = datetime.strftime(rec.stamp, '%Y-%m-%d %H:%M:%S')
         sample.volume = rec.volume
         sample.text = rec.note
         tags = self._get_logrecord_tags(rec)
@@ -148,6 +145,6 @@ def update_summary_box(
                 tags.add(tag.text)
             if sample.text:
                 notes.append(sample.text)
-        summary_box.count = count
-        summary_box.tag = tags
+        summary_box.count = str(count)
+        summary_box.tag = list(tags)
         summary_box.note = notes
