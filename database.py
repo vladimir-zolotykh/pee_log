@@ -135,10 +135,19 @@ def print_tables(day, engine):
 def update_summary_box(
         engine: Engine, summary_box: SummaryBox, date: datetime
 ) -> None:
+    date_str = date.strftime('%Y-%m-%d')
+    summary_box.date = date_str
     with Session(engine) as session:
-        date_str = date.strftime('%Y-%m-%d')
-        query = select(func.COUNT(md.Sample.time)).where(
-            func.DATE(md.Sample.time) == date_str)
-        count = session.scalar(query)
-        if count:
-            summary_box.count = str(count)
+        query = select(md.Sample).where(func.DATE(md.Sample.time) == date_str)
+        tags = set()
+        notes = []
+        count = 0
+        for sample in session.scalars(query):
+            count += 1
+            for tag in sample.tags:
+                tags.add(tag.text)
+            if sample.text:
+                notes.append(sample.text)
+        summary_box.count = count
+        summary_box.tag = tags
+        summary_box.note = notes
