@@ -75,6 +75,8 @@ create a new one""",
         narrow_btn = tk.Button(buttons_bar, text='Narrow to date')
         narrow_btn.config(command=(lambda nb=narrow_btn:
                                    self.narrow_to_date(nb)))
+        if engine.url.database == ':memory:':
+            narrow_btn.config(state=tk.DISABLED)
         Tooltip(narrow_btn, """\
 Select/enter the date into "stamp" field click the button.
 Click again to revert.""",
