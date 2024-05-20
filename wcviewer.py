@@ -264,7 +264,7 @@ Delete the sample from the database""",
                         t = ''
                     labels[i] = t
 
-                def get_vol(vol: Column[int]) -> Optional[int]:
+                def get_vol(vol: Optional[int]) -> Optional[int]:
                     return int(vol) if vol is not None else vol
 
                 log = LogRecord(
