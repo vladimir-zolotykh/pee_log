@@ -1,18 +1,19 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 # PYTHON_ARGCOMPLETE_OK
+from typing import Generator
 from contextlib import contextmanager
 from sqlalchemy import select, func
 from sqlalchemy.engine import Engine
 from sqlalchemy.orm import sessionmaker, Session
 from sqlalchemy.exc import SQLAlchemyError
-from typing import List, Optional
+from typing import List
 from datetime import datetime
 import models
 from logrecord import LogRecord
 from summary_box import SummaryBox
 import models as md
-
+from summary_view import SummaryData
 # Base = declarative_base()
 
 
@@ -148,3 +149,23 @@ def update_summary_box(
         summary_box.count = str(count)
         summary_box.tag = list(tags)
         summary_box.note = notes
+
+
+def generate_summary_data(
+        engine: Engine
+) -> Generator[SummaryData, None, None]:
+    with Session(engine) as session:
+        query = select(md.Sample)
+        tags = set()
+        notes = []
+        count = 0
+        volume = 0
+        for sample in session.scalars(query):
+            count += 1
+            if isinstance(sample.volume, int):
+                volume += int(sample.volume)
+            for tag in sample.tags:
+                tags.add(tag.text)
+            if sample.text:
+                notes.append(sample.text)
+        yield SummaryData(sample.time, count, volume, tag, notes)
