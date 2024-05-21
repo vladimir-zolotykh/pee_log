@@ -26,6 +26,7 @@ from wcfonts import wcfont
 from tooltip import Tooltip
 from wclog import add_logfile_records
 from summary_box import SummaryBox, summary_var
+from summary_view import SummaryView
 
 
 class LogViewer(tk.Tk):
@@ -57,8 +58,13 @@ class LogViewer(tk.Tk):
         log_list.bind('<<TreeviewSelect>>', self.on_treeview_select, add='+')
         self.log_list = log_list
         self.update_log_list()
+        summary_view = SummaryView(self)
+        summary_view.grid(column=0, row=1, sticky=tk.NSEW)
+        for summary_data in db.generate_summary_data(self.engine):
+            summary_view.insert_log(summary_data)
+        self.rowconfigure(1, weight=1)
         form = tk.Frame(self)
-        form.grid(column=1, row=0, sticky=tk.NS)
+        form.grid(column=1, row=0, rowspan=2, sticky=tk.NS)
         row = self.create_form_fields(form)
         row += 1
         buttons_bar = tk.Frame(form)
@@ -124,7 +130,7 @@ Delete the sample from the database""",
             btn.grid(column=col, row=0)
             btn.config(font=wcfont('WcButtonFont'))
         _sep = ttk.Separator(self, orient=tk.VERTICAL)
-        _sep.grid(column=2, row=0, sticky="ns", padx=4, pady=4)
+        _sep.grid(column=2, row=0, rowspan=2, sticky="ns", padx=4, pady=4)
         summary_frame = tk.Frame(self)
         self.columnconfigure(3, weight=1)
         summary_frame.grid(column=3, row=0, sticky=tk.NSEW)
