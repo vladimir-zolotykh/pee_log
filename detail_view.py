@@ -4,27 +4,14 @@
 from datetime import datetime
 from typing import Optional, Union
 import tkinter as tk
-from tkinter import ttk
+from tkinter import ttk         # noqa
 from logrecord import LogRecord
+from scrolled_treeview import ScrolledTreeview
 
 
-class ScrolledTreeview(ttk.Treeview):
+class DetailView(ScrolledTreeview):
     def __init__(self, parent, **kwds):
-        # self.selected_log: selected record converted to LogRecord
-        self.selected_log: LogRecord = None
-        box = tk.Frame(parent)
-        box.grid(column=0, row=0, sticky=tk.NSEW)
-        box.columnconfigure(0, weight=1)
-        box.rowconfigure(0, weight=1)
-        vbar = tk.Scrollbar(box, orient=tk.VERTICAL, command=self.yview)
-        vbar.grid(column=1, row=0, sticky=tk.NS)
-        hbar = tk.Scrollbar(box, orient=tk.HORIZONTAL, command=self.xview)
-        hbar.grid(column=0, row=1, stick=tk.EW)
-        kwds.update({'yscrollcommand': vbar.set, 'xscrollcommand': hbar.set})
-        super(ScrolledTreeview, self).__init__(box, **kwds)
-        self.grid(column=0, row=0, sticky=tk.NSEW)
-        for m in ('grid', 'grid_configure', 'grid_forget'):
-            setattr(self, m, getattr(box, m))
+        super(DetailView, self).__init__(parent, **kwds)
         self.bind('<<TreeviewSelect>>', self.on_select)
         self.set_columns()
 
