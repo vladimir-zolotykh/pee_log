@@ -98,7 +98,7 @@ class SummaryView(ScrolledTreeview):
                                                 '%Y-%m-%d %H:%M:%S'),
             'count': lambda v: int(itemgetter(0)(v)),
             'volume': lambda v: int(itemgetter(0)(v)),
-            'tag': None,
+            'tag': lambda v: len(itemgetter(0)(v).split()),
             'note': None}[cid]
         values = sorted(values, reverse=reverse, key=key)
         for index, (val, iid) in enumerate(values):

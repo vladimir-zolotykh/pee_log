@@ -179,4 +179,4 @@ def generate_summary_data(
                 if sample.text:
                     notes.append(sample.text)
             yield SummaryData(sample.time, count, volume,
-                              ', '.join(tags), notes)
+                              ' '.join(tags), notes)
