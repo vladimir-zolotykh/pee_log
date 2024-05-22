@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 # PYTHON_ARGCOMPLETE_OK
+from itertools import groupby
+from operator import attrgetter
 from typing import Generator
 from contextlib import contextmanager
 from sqlalchemy import select, func
@@ -156,16 +158,25 @@ def generate_summary_data(
 ) -> Generator[SummaryData, None, None]:
     with Session(engine) as session:
         query = select(md.Sample)
-        tags = set()
-        notes = []
-        count = 0
-        volume = 0
-        for sample in session.scalars(query):
-            count += 1
-            if isinstance(sample.volume, int):
-                volume += int(sample.volume)
-            for tag in sample.tags:
-                tags.add(tag.text)
-            if sample.text:
-                notes.append(sample.text)
-        yield SummaryData(sample.time, count, volume, tag, notes)
+        samples = session.scalars(query)
+
+        def sample_date(sample: md.Sample) -> str:
+            return datetime.strptime(sample.time, '%Y-%m-%d  %H:%M:%S').date()
+
+        samples = sorted(samples, key=sample_date)
+        grouped_samples = groupby(samples, key=sample_date)
+        for date, group in grouped_samples:
+            tags = set()
+            notes = []
+            count = 0
+            volume = 0
+            for sample in group:
+                count += 1
+                if isinstance(sample.volume, int):
+                    volume += int(sample.volume)
+                for tag in sample.tags:
+                    tags.add(tag.text)
+                if sample.text:
+                    notes.append(sample.text)
+            yield SummaryData(sample.time, count, volume,
+                              ', '.join(tags), notes)
