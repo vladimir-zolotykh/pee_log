@@ -12,7 +12,7 @@ import tkinter as tk
 from tkinter import ttk
 from tkinter.filedialog import askopenfilename, asksaveasfilename
 from tkinter.messagebox import askyesno, showwarning
-from scrolled_treeview import ScrolledTreeview
+from detail_view import DetailView
 from time4 import Time4, Time4Var
 from combo_db import ComboDb
 from logrecord import LogRecord
@@ -46,14 +46,14 @@ class LogViewer(tk.Tk):
         # con.app = self          # use case: askyesno(parent=con.app,...
         self.form_vars = {}
         # Better not to mention data structure type in a variable name
-        log_list = ScrolledTreeview(self, columns=('id', 'stamp', 'label',
-                                                   'volume', 'note'),
-                                    height=30,
-                                    selectmode='browse')
+        log_list = DetailView(self, columns=('id', 'stamp', 'label',
+                                             'volume', 'note'),
+                              height=30,
+                              selectmode='browse')
         self.columnconfigure(0, weight=3)
         self.rowconfigure(0, weight=1)
         log_list.grid(column=0, row=0, sticky=tk.NSEW)
-        # .bind: two handlers are called: ScrolledTreeview.on_select,
+        # .bind: two handlers are called: DetailView.on_select,
         # then LogViewer.on_treeview_select
         log_list.bind('<<TreeviewSelect>>', self.on_treeview_select, add='+')
         self.log_list = log_list
