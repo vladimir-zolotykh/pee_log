@@ -1,8 +1,44 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 # PYTHON_ARGCOMPLETE_OK
+"""Example how to use (from summary_view module):
+from scrolled_treeview import ScrolledTreeview, ContextMenuMixin
+
+class S0:
+    pass
+
+class SummaryView(ScrolledTreeview, S0, ContextMenuMixin):
+    def __init__(self, parent, **kwds):
+        super(SummaryView, self).__init__(parent, **kwds)
+        super(S0, self).__init__()  # ContextMenuMixin.__init__
+        . . .
+    def make_context_menu(self) -> tk.Menu:
+        m = tk.Menu(self, tearoff=0)
+        m.add_command(label="SummaryView action", command=None)
+        return m
+"""
+from abc import abstractmethod
 import tkinter as tk
 from tkinter import ttk
+
+
+class ContextMenuMixin:
+    def __init__(self, *args, **kwargs):
+        self.context_menu = self.make_context_menu()
+        self.bind('<Button-3>', self.show_context_menu)
+
+    @abstractmethod
+    def make_context_menu(self) -> tk.Menu:
+        pass
+
+    def show_context_menu(self, event: tk.Event) -> None:
+        item_id: str = self.identify_row(event.y)
+        if item_id:
+            self.selection_set(item_id)
+            try:
+                self.context_menu.post(event.x_root, event.y_root)
+            finally:
+                self.context_menu.grab_release()
 
 
 class ScrolledTreeview(ttk.Treeview):
