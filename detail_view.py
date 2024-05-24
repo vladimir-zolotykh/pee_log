@@ -6,14 +6,24 @@ from typing import Optional, Union
 import tkinter as tk
 from tkinter import ttk         # noqa
 from logrecord import LogRecord
-from scrolled_treeview import ScrolledTreeview
+from scrolled_treeview import ScrolledTreeview, ContextMenuMixin
 
 
-class DetailView(ScrolledTreeview):
+class S0:
+    pass
+
+
+class DetailView(ScrolledTreeview, S0, ContextMenuMixin):
     def __init__(self, parent, **kwds):
         super(DetailView, self).__init__(parent, **kwds)
+        super(S0, self).__init__()  # ContextMenuMixin.__init__
         self.bind('<<TreeviewSelect>>', self.on_select)
         self.set_columns()
+
+    def make_context_menu(self) -> tk.Menu:
+        m = tk.Menu(self, tearoff=0)
+        m.add_command(label="DetailView action", command=None)
+        return m
 
     def on_select(self, event):
         try:

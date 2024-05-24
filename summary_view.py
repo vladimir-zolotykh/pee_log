@@ -7,7 +7,7 @@ from typing import Optional, List
 from datetime import datetime
 import tkinter as tk
 import database as db
-from scrolled_treeview import ScrolledTreeview
+from scrolled_treeview import ScrolledTreeview, ContextMenuMixin
 
 
 @dataclass
@@ -39,12 +39,22 @@ def field_width(name: str) -> int:
         return 20
 
 
-class SummaryView(ScrolledTreeview):
+class S0:
+    pass
+
+
+class SummaryView(ScrolledTreeview, S0, ContextMenuMixin):
     def __init__(self, parent, **kwds):
         super(SummaryView, self).__init__(parent, **kwds)
+        super(S0, self).__init__()  # ContextMenuMixin.__init__
         self.bind('<<TreeviewSelect>>', self.on_select)
         self.set_columns()
         self.selected_summary: SummaryData = None
+
+    def make_context_menu(self) -> tk.Menu:
+        m = tk.Menu(self, tearoff=0)
+        m.add_command(label="SummaryView action", command=None)
+        return m
 
     def set_columns(self):
         self.configure(columns=FIELDS[1:])
