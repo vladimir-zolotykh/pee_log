@@ -49,7 +49,7 @@ class ContextMenuMixin(TreeviewProto):
         if item_id:
             self.selection_set(item_id)
             try:
-                self.context_menu.post(event.x_root, event.y_root)
+                self.context_menu.tk_popup(event.x_root, event.y_root)
             finally:
                 self.context_menu.grab_release()
 
