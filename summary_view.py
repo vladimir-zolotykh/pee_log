@@ -1,12 +1,11 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 # PYTHON_ARGCOMPLETE_OK
+from typing import Optional, Callable, Any, Tuple, List
 from operator import itemgetter
-from dataclasses import dataclass, asdict, field
-from typing import Optional, List
+from dataclasses import dataclass, field
 from datetime import datetime
 import tkinter as tk
-import database as db
 from scrolled_treeview import ScrolledTreeview, ContextMenuMixin
 
 
@@ -49,11 +48,11 @@ class SummaryView(ScrolledTreeview, S0, ContextMenuMixin):
         super(S0, self).__init__()  # ContextMenuMixin.__init__
         self.bind('<<TreeviewSelect>>', self.on_select)
         self.set_columns()
-        self.selected_summary: SummaryData = None
+        self.selected_summary: Optional[SummaryData] = None
 
     def make_context_menu(self) -> tk.Menu:
         m = tk.Menu(self, tearoff=0)
-        m.add_command(label="SummaryView action", command=None)
+        m.add_command(label="SummaryView action", command=lambda: None)
         return m
 
     def set_columns(self):
@@ -62,15 +61,22 @@ class SummaryView(ScrolledTreeview, S0, ContextMenuMixin):
         w = field_width('date') * CHAR_W
         self.column("#0", minwidth=w, width=w)
         for f in FIELDS[1:]:
-            self.heading(f, text=f, command=(lambda cid=f: self.sort_column(
-                cid, reverse=True)))
+
+            def make_closure(cid: str = f) -> Callable[[], None]:
+                def sort_column():
+                    self.sort_column(cid, reverse=True)
+                return sort_column
+
+            self.heading(f, text=f, command=make_closure(cid=f))
+            # self.heading(f, text=f, command=(lambda cid=f: self.sort_column(
+            #     cid, reverse=True)))
             w = CHAR_W * field_width(f)
             self.column(f, minwidth=w, width=w)
 
     def insert_log(self, sd: SummaryData) -> str:
         # After .insert has done, everything becomes a string
 
-        iid = self.insert("", tk.END, text=sd.date,
+        iid = self.insert("", tk.END, text=str(sd.date),
                           values=(sd.count, sd.volume, sd.tag, sd.note))
         return iid              # e.g., 'I001'
 
@@ -80,9 +86,11 @@ class SummaryView(ScrolledTreeview, S0, ContextMenuMixin):
         except IndexError:
             return
         date = self.item(iid, 'text')
-        self.selected_summary = SummaryData(date, *self.item(iid, 'values'))
+        self.selected_summary = SummaryData(
+            datetime.strptime(date, '%Y-%m-%d %H:%M:%S'),
+            *self.item(iid, 'values'))
 
-    def sort_column(self, cid: str, reverse: bool = False):
+    def sort_column(self, cid: str, reverse: bool = False) -> None:
         """cid: column index ('#0') or column identifier ('date')"""
         values = [(self.set(iid, cid), iid) for iid in self.get_children('')]
         # values: [(val1, iid1), (val2, iid2), ...]
@@ -92,7 +100,8 @@ class SummaryView(ScrolledTreeview, S0, ContextMenuMixin):
             'count': lambda v: int(itemgetter(0)(v)),
             'volume': lambda v: int(itemgetter(0)(v)),
             'tag': lambda v: len(itemgetter(0)(v).split()),
-            'note': None}[cid]
+            'note': lambda v: v
+        }[cid]
         values = sorted(values, reverse=reverse, key=key)
         for index, (val, iid) in enumerate(values):
             self.move(iid, '', index)
