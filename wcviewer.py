@@ -79,6 +79,7 @@ Update the existing sample or
 create a new one""",
                 font=wcfont('WcTooltipFont'))
         narrow_btn = tk.Button(buttons_bar, text='Narrow to date')
+        self.narrow_btn = narrow_btn  # summary_view uses it
         narrow_btn.config(command=(lambda nb=narrow_btn:
                                    self.narrow_to_date(nb)))
         if engine.url.database == ':memory:':
