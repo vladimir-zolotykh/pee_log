@@ -44,6 +44,8 @@ class S0:
 
 class SummaryView(ScrolledTreeview, S0, ContextMenuMixin):
     def __init__(self, parent, **kwds):
+        # Treeview has '.parent(iid) ' method
+        self._parent = parent
         super(SummaryView, self).__init__(parent, **kwds)
         super(S0, self).__init__()  # ContextMenuMixin.__init__
         self.bind('<<TreeviewSelect>>', self.on_select)
@@ -53,6 +55,16 @@ class SummaryView(ScrolledTreeview, S0, ContextMenuMixin):
     def make_context_menu(self) -> tk.Menu:
         m = tk.Menu(self, tearoff=0)
         m.add_command(label="SummaryView action", command=lambda: None)
+
+        def make_closure(parent):
+            def narrow_to_date():
+                narrow_btn = parent.narrow_btn
+                parent.set_val('stamp', self.selected_summary.date)
+                return parent.narrow_to_date(narrow_btn)
+            return narrow_to_date
+
+        m.add_command(label='Narrow to date',
+                      command=make_closure(self._parent))
         return m
 
     def set_columns(self):
@@ -85,7 +97,8 @@ class SummaryView(ScrolledTreeview, S0, ContextMenuMixin):
             iid = self.selection()[0]  # iid: 'I003'
         except IndexError:
             return
-        date = self.item(iid, 'text')
+        date: str = self.item(iid, 'text')
+        # date = '2024-03-02 23:36:00'
         self.selected_summary = SummaryData(
             datetime.strptime(date, '%Y-%m-%d %H:%M:%S'),
             *self.item(iid, 'values'))
