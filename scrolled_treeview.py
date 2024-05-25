@@ -17,6 +17,7 @@ class SummaryView(ScrolledTreeview, S0, ContextMenuMixin):
         m.add_command(label="SummaryView action", command=None)
         return m
 """
+from typing import cast
 from abc import abstractmethod
 import tkinter as tk
 from tkinter import ttk
@@ -25,16 +26,18 @@ from tkinter import ttk
 class ContextMenuMixin:
     def __init__(self, *args, **kwargs):
         self.context_menu = self.make_context_menu()
-        self.bind('<Button-3>', self.show_context_menu)
+        tree: ttk.Treeview = cast(ttk.Treeview, self)
+        tree.bind('<Button-3>', self.show_context_menu)
 
     @abstractmethod
     def make_context_menu(self) -> tk.Menu:
         pass
 
     def show_context_menu(self, event: tk.Event) -> None:
-        item_id: str = self.identify_row(event.y)
+        tree: ttk.Treeview = cast(ttk.Treeview, self)
+        item_id: str = tree.identify_row(event.y)
         if item_id:
-            self.selection_set(item_id)
+            tree.selection_set(item_id)
             try:
                 self.context_menu.post(event.x_root, event.y_root)
             finally:
