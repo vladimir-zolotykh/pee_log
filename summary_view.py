@@ -60,7 +60,9 @@ class SummaryView(ScrolledTreeview, S0, ContextMenuMixin):
         def make_closure(parent):
             def narrow_to_date():
                 narrow_btn = parent.narrow_btn
-                parent.set_val('stamp', self.selected_summary.date)
+                if self.selected_summary:
+                    date = self.selected_summary.date
+                    parent.set_val('stamp', date)
                 return parent.narrow_to_date(narrow_btn)
             return narrow_to_date
 
@@ -106,8 +108,8 @@ class SummaryView(ScrolledTreeview, S0, ContextMenuMixin):
         values = self.item(iid, 'values')
         self.selected_summary = SummaryData(
             date=datetime.strptime(date, '%Y-%m-%d %H:%M:%S'),
-            count=values[0], volume=values[1], tag=values[2].split(),
-            note=values[3].split('\n'))
+            count=int(values[0]), volume=int(values[1]),
+            tag=values[2].split(), note=values[3].split('\n'))
 
     def sort_column(self, cid: str, reverse: bool = False) -> None:
         """cid: column index ('#0') or column identifier ('date')"""
