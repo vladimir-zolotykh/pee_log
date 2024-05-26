@@ -178,5 +178,7 @@ def generate_summary_data(
                     tags.add(tag.text)
                 if sample.text:
                     notes.append(sample.text)
-            yield SummaryData(sample.time, count, volume,
-                              ' '.join(tags), notes)
+            # yield SummaryData(sample.time, count, volume,
+            #                   ' '.join(tags), notes)
+            yield SummaryData(date=sample.time, count=count, volume=volume,
+                              tag=tags, note=notes)

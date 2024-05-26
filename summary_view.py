@@ -5,17 +5,18 @@ from typing import Optional, Callable, Any, Tuple, List
 from operator import itemgetter
 from dataclasses import dataclass, field
 from datetime import datetime
+from pydantic import BaseModel
 import tkinter as tk
 from scrolled_treeview import ScrolledTreeview, ContextMenuMixin
 
 
-@dataclass
-class SummaryData:
+# @dataclass
+class SummaryData(BaseModel):
     date: datetime
     count: int = 0              # logs a day
     volume: int = 0             # total volume
     tag: List[str] = field(default_factory=list)
-    note: str = ''
+    note: List[str] = field(default_factory=list)
 
 
 CHAR_W = 8                      # assuming 1 char is 8 pix
@@ -99,9 +100,14 @@ class SummaryView(ScrolledTreeview, S0, ContextMenuMixin):
             return
         date: str = self.item(iid, 'text')
         # date = '2024-03-02 23:36:00'
+        # self.selected_summary = SummaryData(
+        #     datetime.strptime(date, '%Y-%m-%d %H:%M:%S'),
+        #     *self.item(iid, 'values'))
+        values = self.item(iid, 'values')
         self.selected_summary = SummaryData(
-            datetime.strptime(date, '%Y-%m-%d %H:%M:%S'),
-            *self.item(iid, 'values'))
+            date=datetime.strptime(date, '%Y-%m-%d %H:%M:%S'),
+            count=values[0], volume=values[1], tag=values[2].split(),
+            note=values[3].split('\n'))
 
     def sort_column(self, cid: str, reverse: bool = False) -> None:
         """cid: column index ('#0') or column identifier ('date')"""
