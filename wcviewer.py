@@ -48,7 +48,7 @@ class LogViewer(tk.Tk):
         # Better not to mention data structure type in a variable name
         log_list = DetailView(self, columns=('id', 'stamp', 'label',
                                              'volume', 'note'),
-                              height=30,
+                              height=23,
                               selectmode='browse')
         self.columnconfigure(0, weight=3)
         self.rowconfigure(0, weight=1)
