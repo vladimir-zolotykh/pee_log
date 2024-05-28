@@ -37,12 +37,15 @@ def parse_date(date_str: str) -> datetime:
 
 
 def parse_sample(sample_str: str, sample_date: datetime) -> LogRecord:
-    # TODO: modify the following re to match "2400" line.
+    m = re.match(r'^.* #.*$', sample_str)
+    if m:
+        i = sample_str.index(' #')
+        sample_str = sample_str[:i]
     m = re.match(r'^(?P<time>\d{3,4})\s+(?P<volume>\d+)?(?P<rest>.*)$',
                  sample_str)
     if m:
         # There's no "note" in YYYY-MM-DD.txt files. To enter it use
-        # log_viewer (tk interface).
+        # wcviewer (tk interface).
         time4 = m.group('time')
         if len(time4) < 4:
             time4 = '0' + time4
