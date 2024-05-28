@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 # PYTHON_ARGCOMPLETE_OK
 import sys
+from functools import partial
 from datetime import datetime
 from sqlalchemy import create_engine
 # from sqlalchemy.orm import declarative_base
@@ -16,7 +17,9 @@ import models as md
 # Base = declarative_base()
 
 
-def add_logfile_records(logfile: str, engine) -> None:
+def add_logfile_records(
+        logfile: str, engine, pee_optional: bool = False
+) -> None:
     """Add LOGFILE records to DB (all records or none)
 
     Read the record, make the Sample from it, add the Sample to the DB."""
@@ -24,7 +27,8 @@ def add_logfile_records(logfile: str, engine) -> None:
     for rec in logrecords_generator(logfile):
         with db.session_scope(engine) as session:
             tags = session.add_missing_tag(session._get_logrecord_tags(rec),
-                                           missing_tag_text='pee')
+                                           missing_tag_text='pee',
+                                           pee_optional=pee_optional)
             kwds = {'time': rec.stamp, 'volume': rec.volume, 'text': rec.note}
             sample = md.Sample(**kwds)
             session.add(sample)
@@ -41,14 +45,17 @@ parser.add_argument('--db', default='wclog.db', help='Database file (DB)')
 subparsers = parser.add_subparsers(
     description='Manage logging database DB',
     dest='command', title=f'{sys.argv[0]} commands')
+
 parser_init = subparsers.add_parser(
     'init', help='Initialize DB. Make empty tables',
     aliases=['initialize'])
 parser_init.set_defaults(func=lambda _, engine: db.initialize(engine))
+
 parser_del = subparsers.add_parser(
     'del', help='Delete table contents', aliases=['empty'])
 # set_defaults func signature: (logfile: str, engine: Engine)
 parser_del.set_defaults(func=lambda ingnore, engine: db.empty_tables(engine))
+
 parser_test = subparsers.add_parser(
     'test', help='Test consistency of log file(s)')
 parser_test.add_argument(
@@ -56,11 +63,23 @@ parser_test.add_argument(
     help='The .txt file (e.g., LOG_DIARY/2024-03-15.txt)')
 # parser_test.set_defaults(func=test_logfile)
 parser_test.set_defaults(func=lambda file, ignore: test_log.test_log(file))
+
 parser_add = subparsers.add_parser('add', help='Add logfile(s) to the DB')
 parser_add.add_argument(
     'logfile', nargs='+',
     help='The .txt file (e.g., LOG_DIARY/2024-03-15.txt)')
+# Orignally the log record "1030" added PEE tag to the db
+# implicitly. Similarly, "1140 IMET" added to the db two tags, PEE and
+# IMET.  If --pee-orignal is specified, "1030" still adds PEE tag,
+# while "1140 IMET" adds only IMET tag
+parser_add.add_argument(
+    '--pee-optional', action='store_true', help='''
+Orignally the log file line "1030" added PEE tag to the db
+implicitly. Similarly, "1140 IMET" added two tags, PEE and IMET.  If
+--pee-optional is specified, "1030" still adds PEE tag, while
+"1140 IMET" adds only IMET tag''')
 parser_add.set_defaults(func=add_logfile_records)
+
 parser_print = subparsers.add_parser(
     'print', help='Print the "sample" table of the DB')
 parser_print.add_argument(
@@ -84,6 +103,8 @@ if __name__ == '__main__':
     else:
         for log in args.logfile:
             # func: test_log or add_logfile_records
+            if args.func is add_logfile_records and args.pee_optional:
+                args.func = partial(add_logfile_records, pee_optional=True)
             try:
                 args.func(log, engine)
                 print(f'"{log}" added successfully')
