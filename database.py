@@ -64,7 +64,8 @@ class Transaction(Session):
 
     def add_missing_tag(
             self, tags: List[md.Tag],
-            missing_tag_text: str = 'pee'
+            missing_tag_text: str = 'pee',
+            pee_optional: bool = False
     ) -> List[md.Tag]:
         """Add Tag(text=missing_tag_text) to the TAGS if missing
 
@@ -75,7 +76,11 @@ class Transaction(Session):
                 return tags
         new_tag = self.get_or_make_tag(missing_tag_text)
         if new_tag:
-            tags.insert(0, new_tag)
+            if pee_optional:
+                if len(tags) == 0:
+                    tags.insert(0, new_tag)
+            else:
+                tags.insert(0, new_tag)
         return tags
 
 
