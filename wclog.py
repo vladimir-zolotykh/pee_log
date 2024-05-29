@@ -15,15 +15,19 @@ import database as db
 # from database import session_scope, initialize, empty_tables, print_tables
 import models as md
 # Base = declarative_base()
+from log_diary_config import read_config
 
 
 def add_logfile_records(
-        logfile: str, engine, pee_optional: bool = False
+        logfile: str, engine, pee_optional: bool = False,
+        verbose: bool = False
 ) -> None:
     """Add LOGFILE records to DB (all records or none)
 
     Read the record, make the Sample from it, add the Sample to the DB."""
 
+    if 0 < verbose:
+        print(f'add_logfile_records: {pee_optional = }')
     for rec in logrecords_generator(logfile):
         with db.session_scope(engine) as session:
             tags = session.add_missing_tag(session._get_logrecord_tags(rec),
@@ -42,6 +46,11 @@ parser = argparse.ArgumentParser(
 parser.add_argument(
     '--echo', action='store_true', help='Print emitted SQL commands')
 parser.add_argument('--db', default='wclog.db', help='Database file (DB)')
+parser.add_argument(
+    '--verbose, -v', action='count', default=1, help='''
+Provide some feedback. E.g., add_logfile_records prints its
+`pee_optional` parameter if args.verbose > 0
+''')
 subparsers = parser.add_subparsers(
     description='Manage logging database DB',
     dest='command', title=f'{sys.argv[0]} commands')
@@ -101,10 +110,13 @@ if __name__ == '__main__':
     elif args.command == 'print':
         args.func(args.day, engine)
     else:
+        pee_optional_dict = read_config()
         for log in args.logfile:
             # func: test_log or add_logfile_records
-            if args.func is add_logfile_records and args.pee_optional:
-                args.func = partial(add_logfile_records, pee_optional=True)
+            if args.func is add_logfile_records:  # command is ADD
+                if args.pee_optional or (log in pee_optional_dict):
+                    args.func = partial(add_logfile_records, pee_optional=True,
+                                        verbose=args.verbose)
             try:
                 args.func(log, engine)
                 print(f'"{log}" added successfully')
