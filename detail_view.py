@@ -92,4 +92,6 @@ class DetailView(ScrolledTreeview, S0, ContextMenuMixin):
                 cid, reverse=True)))
             w = self.get_annotated_column_width(f)
             w *= 8              # assuming 1 char is 8 pix
-            self.column(f, minwidth=w, width=w)
+            # `Stretch` is 1 by default. That prevented the columns
+            # from resizing.
+            self.column(f, minwidth=w, width=w, stretch=0)
