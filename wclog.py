@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 # PYTHON_ARGCOMPLETE_OK
 import sys
+import os
 from functools import partial
 from datetime import datetime
 from sqlalchemy import create_engine
@@ -26,8 +27,8 @@ def add_logfile_records(
 
     Read the record, make the Sample from it, add the Sample to the DB."""
 
-    if 0 < verbose:
-        print(f'add_logfile_records: {pee_optional = }')
+    # if 0 < verbose:
+    #     print(f'add_logfile_records: {pee_optional = }')
     for rec in logrecords_generator(logfile):
         with db.session_scope(engine) as session:
             tags = session.add_missing_tag(session._get_logrecord_tags(rec),
@@ -47,7 +48,7 @@ parser.add_argument(
     '--echo', action='store_true', help='Print emitted SQL commands')
 parser.add_argument('--db', default='wclog.db', help='Database file (DB)')
 parser.add_argument(
-    '--verbose, -v', action='count', default=1, help='''
+    '--verbose', '-v', action='count', default=0, help='''
 Provide some feedback. E.g., add_logfile_records prints its
 `pee_optional` parameter if args.verbose > 0
 ''')
@@ -114,12 +115,15 @@ if __name__ == '__main__':
         for log in args.logfile:
             # func: test_log or add_logfile_records
             if args.func is add_logfile_records:  # command is ADD
-                if args.pee_optional or (log in pee_optional_dict):
+                _m = ''
+                if args.pee_optional or (os.path.basename(log)
+                                         in pee_optional_dict):
+                    _m = '(with pee_optional=True)'
                     args.func = partial(add_logfile_records, pee_optional=True,
                                         verbose=args.verbose)
             try:
                 args.func(log, engine)
-                print(f'"{log}" added successfully')
+                print(f'"{log}" added successfully {_m}')
             except SQLAlchemyError as err:
                 print(f'"{log}": {err}')
             finally:
