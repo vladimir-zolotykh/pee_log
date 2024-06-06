@@ -40,7 +40,7 @@ def parse_sample(sample_str: str, sample_date: datetime) -> LogRecord:
     m = re.match(r'^.* #.*$', sample_str)
     if m:
         i = sample_str.index(' #')
-        sample_str = sample_str[:i]
+        sample_str = sample_str[:i] + sample_str[-1]
     m = re.match(r'^(?P<time>\d{3,4})\s+(?P<volume>\d+)?(?P<rest>.*)$',
                  sample_str)
     if m:
@@ -73,7 +73,7 @@ def parse_sample(sample_str: str, sample_date: datetime) -> LogRecord:
             volume=volume)
         return rec
     else:
-        raise ParseSampleError(f'{sample_str.strip()}: Invalid sample line')
+        raise ParseSampleError(f'{sample_str}: Invalid sample line')
 
 
 def logrecords_generator(
