@@ -54,20 +54,14 @@ class SummaryView(ScrolledTreeview, S0, ContextMenuMixin):
         self.selected_summary: Optional[SummaryData] = None
 
     def make_context_menu(self) -> tk.Menu:
+        def _narrow_to_date():
+            parent = self._parent
+            if self.selected_summary:
+                parent.set_val('stamp', self.selected_summary.date)
+            parent.narrow_to_date(parent.narrow_btn)
+
         m = tk.Menu(self, tearoff=0)
-        # m.add_command(label="SummaryView action", command=lambda: None)
-
-        def make_closure(parent):
-            def narrow_to_date():
-                narrow_btn = parent.narrow_btn
-                if self.selected_summary:
-                    date = self.selected_summary.date
-                    parent.set_val('stamp', date)
-                return parent.narrow_to_date(narrow_btn)
-            return narrow_to_date
-
-        m.add_command(label='Narrow to date',
-                      command=make_closure(self._parent))
+        m.add_command(label='Narrow to date', command=_narrow_to_date)
         return m
 
     def set_columns(self):
