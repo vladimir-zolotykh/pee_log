@@ -110,19 +110,23 @@ if __name__ == '__main__':
         args.func('', engine)   # func = empty_tables
     elif args.command == 'print':
         args.func(args.day, engine)
-    else:
+    elif args.command == 'test':
+        for log in args.logfile:
+            args.func(log, engine)
+    else:                       # args.command = `add`
         pee_optional_dict = read_config()
         for log in args.logfile:
-            # func: test_log or add_logfile_records
-            if args.func is add_logfile_records:  # command is ADD
-                _m = ''
-                if args.pee_optional or (os.path.basename(log)
-                                         in pee_optional_dict):
-                    _m = '(with pee_optional=True)'
-                    args.func = partial(add_logfile_records, pee_optional=True,
-                                        verbose=args.verbose)
+            _m = ''
+            if (args.pee_optional or (os.path.basename(log) in
+                                      pee_optional_dict)):
+                pee_optional_flag = True
+                _m = '(with pee_optional=True)'
+            else:
+                pee_optional_flag = False
             try:
-                args.func(log, engine)
+                # args.func is `add_logfile_records`
+                args.func(log, engine, pee_optional=pee_optional_flag,
+                          verbose=args.verbose)
                 print(f'"{log}" added successfully {_m}')
             except SQLAlchemyError as err:
                 print(f'"{log}": {err}')
