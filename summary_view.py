@@ -55,7 +55,7 @@ class SummaryView(ScrolledTreeview, S0, ContextMenuMixin):
 
     def make_context_menu(self) -> tk.Menu:
         m = tk.Menu(self, tearoff=0)
-        m.add_command(label="SummaryView action", command=lambda: None)
+        # m.add_command(label="SummaryView action", command=lambda: None)
 
         def make_closure(parent):
             def narrow_to_date():
