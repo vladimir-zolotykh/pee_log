@@ -36,7 +36,11 @@ def parse_date(date_str: str) -> datetime:
             f'{date_str}: Invalid header line, must be YYYY-MM-DD')
 
 
-def parse_sample(sample_str: str, sample_date: datetime) -> LogRecord:
+def parse_sample(
+        logfile: str,
+        sample_str: str,
+        sample_date: datetime
+) -> LogRecord:
     m = re.match(r'^.* #.*$', sample_str)
     if m:
         i = sample_str.index(' #')
@@ -54,7 +58,7 @@ def parse_sample(sample_str: str, sample_date: datetime) -> LogRecord:
         try:
             time = datetime.strptime(time4, '%H%M').time()
         except ValueError as err:
-            raise ValueError(f'Invalide TIME4 "{time4}"') from err
+            raise ValueError(f'Invalide TIME4 "{time4}" in {logfile}') from err
         stamp_str = datetime.combine(sample_date, time).strftime(
             '%Y-%m-%d %H:%M:00')
         label_text = [''] * 3
@@ -97,7 +101,7 @@ def logrecords_generator(
                 if include_header:
                     yield line_str
             else:
-                yield parse_sample(line_str, log_datetime)
+                yield parse_sample(logfile, line_str, log_datetime)
 
 
 if __name__ == '__main__':
