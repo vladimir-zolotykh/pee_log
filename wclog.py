@@ -3,34 +3,42 @@
 # PYTHON_ARGCOMPLETE_OK
 import sys
 import os
-from functools import partial
 from datetime import datetime
-from sqlalchemy import create_engine
-# from sqlalchemy.orm import declarative_base
+from sqlalchemy import create_engine, select
 from sqlalchemy.exc import SQLAlchemyError
 import argparse
 import argcomplete
 import test_log
 from sampletag_re import logrecords_generator
 import database as db
-# from database import session_scope, initialize, empty_tables, print_tables
 import models as md
-# Base = declarative_base()
 from log_diary_config import read_config
 
 
 def add_logfile_records(
         logfile: str, engine, pee_optional: bool = False,
+        check_duplicates: bool = False,
         verbose: bool = False
 ) -> None:
     """Add LOGFILE records to DB (all records or none)
 
     Read the record, make the Sample from it, add the Sample to the DB."""
 
-    # if 0 < verbose:
-    #     print(f'add_logfile_records: {pee_optional = }')
-    for rec in logrecords_generator(logfile):
+    line_no: int
+    num_skipped: int = 0
+    for line_no, rec in enumerate(logrecords_generator(logfile), 1):
         with db.session_scope(engine) as session:
+            if check_duplicates:
+                rec_stamp = rec.stamp.strftime("%Y-%m-%d %H:%M:%S")
+                if session.scalar(
+                        select(md.Sample)
+                        .where(md.Sample.time == rec_stamp)):
+                    if verbose:
+                        w1 = f'{os.path.basename(logfile)}:{line_no}'
+                        print(f'{w1:17s} skipped, '
+                              f'"{rec.stamp}" exists in {engine.url.database}')
+                    num_skipped += 1
+                    continue
             tags = session.add_missing_tag(session._get_logrecord_tags(rec),
                                            missing_tag_text='pee',
                                            pee_optional=pee_optional)
@@ -38,6 +46,8 @@ def add_logfile_records(
             sample = md.Sample(**kwds)
             session.add(sample)
             sample.tags.extend(tags)
+    if num_skipped and verbose and check_duplicates:
+        print(f'Total {num_skipped} lines was skipped')
 
 
 parser = argparse.ArgumentParser(
@@ -90,6 +100,14 @@ implicitly. Similarly, "1140 IMET" added two tags, PEE and IMET.  If
 "1140 IMET" adds only IMET tag''')
 parser_add.set_defaults(func=add_logfile_records)
 
+parser_update = subparsers.add_parser('update', help="""
+Update logfile in the DB. Use when a few records are missing in the
+logfile when it was added. Read the file and add only the missing
+records.
+""")
+parser_update.add_argument(
+    'logfile', help='The .txt file (e.g., LOG_DIARY/2024-03-15.txt)')
+
 parser_print = subparsers.add_parser(
     'print', help='Print the "sample" table of the DB')
 parser_print.add_argument(
@@ -113,6 +131,9 @@ if __name__ == '__main__':
     elif args.command == 'test':
         for log in args.logfile:
             args.func(log, engine)
+    elif args.command == 'update':
+        add_logfile_records(args.logfile, engine,
+                            verbose=True, check_duplicates=True)
     else:                       # args.command = `add`
         pee_optional_dict = read_config()
         for log in args.logfile:
