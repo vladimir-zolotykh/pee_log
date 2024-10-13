@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 # PYTHON_ARGCOMPLETE_OK
 import os
+import io
 from typing import Dict
 import csv
 LOG_DIARY_DIR = './LOG_DIARY'
@@ -38,8 +39,13 @@ def read_config(config_filename=CONFIG_FILENAME) -> Dict[str, str]:
     '2024-05-21.txt': '--pee-optional'
     """
 
-    with open(os.path.join(LOG_DIARY_DIR, config_filename),
-              newline='') as csvfile:
+    open_kwargs: dict[str, str] = {'newline': ''}
+    fd: io.TextIOBase
+    try:
+        fd = open(os.path.join(LOG_DIARY_DIR, config_filename), **open_kwargs)
+    except FileNotFoundError:
+        fd = open(config_filename, **open_kwargs)
+    with fd as csvfile:
         reader = csv.reader(csvfile, delimiter=' ')
         config_dict: Dict[str, str] = {}
         for row in reader:
