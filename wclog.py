@@ -26,26 +26,33 @@ def add_logfile_records(
 
     line_no: int
     num_skipped: int = 0
-    for line_no, rec in enumerate(logrecords_generator(logfile), 1):
-        with db.session_scope(engine) as session:
-            if check_duplicates:
-                rec_stamp = rec.stamp.strftime("%Y-%m-%d %H:%M:%S")
-                if session.scalar(
-                        select(md.Sample)
-                        .where(md.Sample.time == rec_stamp)):
-                    if verbose:
-                        w1 = f'{os.path.basename(logfile)}:{line_no}'
-                        print(f'{w1:17s} skipped, '
-                              f'"{rec.stamp}" exists in {engine.url.database}')
-                    num_skipped += 1
-                    continue
-            tags = session.add_missing_tag(session._get_logrecord_tags(rec),
-                                           missing_tag_text='pee',
-                                           pee_optional=pee_optional)
-            kwds = {'time': rec.stamp, 'volume': rec.volume, 'text': rec.note}
-            sample = md.Sample(**kwds)
-            session.add(sample)
-            sample.tags.extend(tags)
+    with db.session_scope(engine) as session:
+        try:
+            for line_no, rec in enumerate(logrecords_generator(logfile), 1):
+                if check_duplicates:
+                    rec_stamp = rec.stamp.strftime("%Y-%m-%d %H:%M:%S")
+                    if session.scalar(
+                            select(md.Sample)
+                            .where(md.Sample.time == rec_stamp)):
+                        if verbose:
+                            w1 = f'{os.path.basename(logfile)}:{line_no}'
+                            print(f'{w1:17s} skipped, '
+                                  f'"{rec.stamp}" exists in '
+                                  f'{engine.url.database}')
+                        num_skipped += 1
+                        continue
+                tags = session.add_missing_tag(
+                    session._get_logrecord_tags(rec),
+                    missing_tag_text='pee',
+                    pee_optional=pee_optional)
+                kwds = {'time': rec.stamp, 'volume': rec.volume,
+                        'text': rec.note}
+                sample = md.Sample(**kwds)
+                session.add(sample)
+                sample.tags.extend(tags)
+        except ValueError:
+            session.rollback()
+            raise
     if num_skipped and verbose and check_duplicates:
         print(f'Total {num_skipped} lines was skipped')
 
@@ -121,7 +128,17 @@ parser_print.set_defaults(
 if __name__ == '__main__':
     argcomplete.autocomplete(parser)
     args = parser.parse_args()
+    if not os.path.exists(args.db):
+        print(f"""\
+{args.db} is missing. Have you started wclog.py from the right
+directory (shall be ~/Documents/pee_log)? Otherwise set --db option\
+        """)
+        exit(1)
     engine = create_engine(f'sqlite:///{args.db}', echo=args.echo)
+    try:
+        engine.connect()
+    except SQLAlchemyError as err:
+        print(f'{err = }')
     if args.command in ('init', 'initialize'):
         args.func('', engine)
     elif args.command == 'del':
