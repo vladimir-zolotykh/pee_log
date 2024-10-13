@@ -25,7 +25,8 @@ def test_log(input_file):
         print(f'{input_file} looks Ok')
     else:
         print(f'{input_file:40s}: {num_lines:2d}\n'
-              f'{"parse_log_re":40s}: {1 + len(parse_res[0][1]):2d}')
+              f'{"parse_log_re":40s}: {1 + len(parse_res[0][1]):2d}\n'
+              f'Likely {input_file} has empty lines(s) in the end')
 
 
 parser = argparse.ArgumentParser(
