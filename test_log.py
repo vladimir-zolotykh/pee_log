@@ -14,6 +14,7 @@ $ for f in LOG_DIARY/*.txt; do diary.py test $f; done
 import argparse
 import argcomplete
 import parse_log_re
+from validate_sample import validate
 
 
 def test_log(input_file):
@@ -21,6 +22,8 @@ def test_log(input_file):
         log_str = fd.read()
         num_lines = log_str.count('\n')
         parse_res = parse_log_re.parse_log_re(log_str)
+        if not validate(parse_res[0][1], verbose=True):
+            raise ValueError('Invalid time(s) found')
     if num_lines == 1 + len(parse_res[0][1]):
         print(f'{input_file} looks Ok')
     else:
