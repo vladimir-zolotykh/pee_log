@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 # PYTHON_ARGCOMPLETE_OK
+from typing import Optional
 import re
 
 
@@ -8,7 +9,7 @@ def is_valid_time2(time_str: str) -> bool:
     """
     Validate the time string format (HHMM) and ensure it's within 0000-2359.
     """
-    m: re.Match = re.match(r'^(?P<hh>\d{2})(?P<mm>\d{2})$', time_str)
+    m: Optional[re.Match] = re.match(r'^(?P<hh>\d{2})(?P<mm>\d{2})$', time_str)
     if m:
         hour: int = int(m[1])
         minute: int = int(m[2])
@@ -28,7 +29,7 @@ def is_valid_time(time_str: str) -> bool:
 
 
 def check_ascending_order2(times: list) -> bool:
-    pass
+    raise NotImplementedError
 
 
 def check_ascending_order(times: list) -> bool:
@@ -57,6 +58,34 @@ def main(file_path: str):
         print("All times are valid and in strictly ascending order.")
     else:
         print("Times are not in strictly ascending order.")
+
+
+def validate(
+        times: list[str], filename: str = '2024-10-10.txt',
+        verbose: bool = False
+) -> bool:
+    invalid_times: list[tuple[int, str]] = [
+        (index, time) for (index, time) in enumerate(times, 2)
+        if not is_valid_time(time)]
+    if invalid_times:
+        if verbose:
+            # print(f"Invalid times found: {invalid_times}")
+            formatted_invalid_times = [
+                f'"{filename}": {index} - "{time}"' for (index, time)
+                in invalid_times
+            ]
+            print(f'Invalid time(s) found: {formatted_invalid_times}')
+        return False
+
+    # Check if times are in strictly ascending order
+    if check_ascending_order(times):
+        if verbose:
+            print("All times are valid and in strictly ascending order.")
+        return True
+    else:
+        if verbose:
+            print("Times are not in strictly ascending order.")
+        return False
 
 
 if __name__ == '__main__':
