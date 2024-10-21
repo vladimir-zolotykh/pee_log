@@ -147,7 +147,8 @@ directory (shall be ~/Documents/pee_log)? Otherwise set --db option\
         args.func(args.day, engine)
     elif args.command == 'test':
         for log in args.logfile:
-            args.func(log, engine)
+            if not args.func(log, engine):
+                break
     elif args.command == 'update':
         add_logfile_records(args.logfile, engine,
                             verbose=True, check_duplicates=True)

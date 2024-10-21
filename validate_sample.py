@@ -68,24 +68,23 @@ def validate(
         (index, time) for (index, time) in enumerate(times, 2)
         if not is_valid_time(time)]
     if invalid_times:
-        if verbose:
-            # print(f"Invalid times found: {invalid_times}")
-            formatted_invalid_times = [
-                f'"{filename}": {index} - "{time}"' for (index, time)
-                in invalid_times
-            ]
-            print(f'Invalid time(s) found: {formatted_invalid_times}')
+        formatted_invalid_times = [
+            f'"{filename}": {index} - "{time}"' for (index, time)
+            in invalid_times
+        ]
+        print(f'Invalid time(s) found: {formatted_invalid_times}')
         return False
 
     # Check if times are in strictly ascending order
-    if check_ascending_order(times):
-        if verbose:
-            print("All times are valid and in strictly ascending order.")
-        return True
-    else:
-        if verbose:
-            print("Times are not in strictly ascending order.")
-        return False
+    for i in range(len(times) - 1):
+        if times[i] >= times[i + 1]:
+            print(f'Order error at line {i + 2}: "{times[i]}" '
+                  f'is not less than "{times[i + 1]}" in "{filename}".')
+            return False
+
+    if verbose:
+        print("All times are valid and in strictly ascending order.")
+    return True
 
 
 if __name__ == '__main__':
