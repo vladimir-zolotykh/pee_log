@@ -61,8 +61,7 @@ def main(file_path: str):
 
 
 def validate(
-        times: list[str], filename: str = '2024-10-10.txt',
-        verbose: bool = False
+        times: list[str], filename, verbose: bool = False
 ) -> bool:
     invalid_times: list[tuple[int, str]] = [
         (index, time) for (index, time) in enumerate(times, 2)
@@ -78,8 +77,8 @@ def validate(
     # Check if times are in strictly ascending order
     for i in range(len(times) - 1):
         if times[i] >= times[i + 1]:
-            print(f'Order error at line {i + 2}: "{times[i]}" '
-                  f'is not less than "{times[i + 1]}" in "{filename}".')
+            print(f'"{filename}":{i + 2} - order error "{times[i]}" '
+                  f'is not less than "{times[i + 1]}".')
             return False
 
     if verbose:
