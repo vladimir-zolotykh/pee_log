@@ -53,6 +53,9 @@ def parse_log_re(log_str):
 
 
 def parse_log_re24h(log_str):
+    def to_PM(time: str) -> str:
+        return time
+
     full_log_re = re.compile(r'^(\d{4}-\d{2}-\d{2})\s*(.*)$',
                              re.DOTALL | re.MULTILINE)
     timestamp_re = re.compile(r'^\d{3,4}(?:[ \t]\d+)?(?:[ \t]\w+)?$',
@@ -63,7 +66,8 @@ def parse_log_re24h(log_str):
         date, rest = match.groups()
         timestamps = timestamp_re.findall(rest)
         # timestamps = ['306', '529', ... ]
-        result.append((date, timestamps))
+        _timestamps = [to_PM(t) for t in timestamps]
+        result.append((date, _timestamps))
     return result
 
 
