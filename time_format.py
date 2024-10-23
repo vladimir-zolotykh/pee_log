@@ -13,12 +13,10 @@ from datetime import datetime
 
 
 def to24H(times: list[str]) -> list[str]:
-    times12H: list[str] = times
     times24H: list[str] = []
     sfx = 'AM'
-    am0 = datetime.strptime('1200am', '%I%M%p')
-    dt: datetime = am0
-    for time_str in times12H:
+    dt: datetime = datetime.strptime('1200am', '%I%M%p')
+    for time_str in times:
         if len(time_str) <= 3:
             time_str = time_str.zfill(4)
         time_str += sfx
@@ -34,6 +32,5 @@ def to24H(times: list[str]) -> list[str]:
 
 
 if __name__ == '__main__':
-    # convert_12_to_24_hour_format("LOG_DIARY/2024-01-18.txt")
     import doctest
     doctest.testmod()
