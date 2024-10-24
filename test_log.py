@@ -24,13 +24,9 @@ def test_log(input_file: str) -> bool:
     False to abort scanning
     """
     with open(input_file) as fd:
-        lines = fd.readlines()
-        log_str2 = ''.join((s for s in lines if s != '\n'))
-        log_str = log_str2
-        # log_str: str = fd.read()
+        log_str = ''.join(line for line in fd if line.strip())
         num_lines = log_str.count('\n')
         parse_res = parse_log_re.parse_log_re(log_str)
-        # parse_res = parse_log_re.parse_log_re24h(log_str)
         times0 = parse_res[0][1]
         # remove tags & volumes
         _times0 = [(lambda s: s[:4])(s) for s in times0]
