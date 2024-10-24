@@ -16,13 +16,24 @@ def to24H(times: list[str]) -> list[str]:
     times24H: list[str] = []
     sfx = 'AM'
     dt: datetime = datetime.strptime('1200am', '%I%M%p')
+    _times: list[str] = []
     for time_str in times:
+        # make times str 4 digits lenght
         if len(time_str) <= 3:
             time_str = time_str.zfill(4)
+        _times.append(time_str)
+    times = _times
+    for time_str in times:
+        # if len(time_str) <= 3:
+        #     time_str = time_str.zfill(4)
         time_str += sfx
         format = '%I%M%p'
         dt_prev: datetime = dt
-        dt = datetime.strptime(time_str, format)
+        try:
+            dt = datetime.strptime(time_str, format)
+        except ValueError:
+            # Already in 24H format?
+            return times
         if dt.hour < dt_prev.hour:
             sfx = 'PM'
             time_str = time_str[:-2] + sfx

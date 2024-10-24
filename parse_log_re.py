@@ -41,7 +41,7 @@ def parse_log_re(log_str):
     #                          re.DOTALL | re.MULTILINE)
     full_log_re = re.compile(r'^(\d{4}-\d{2}-\d{2})\s*(.*)$',
                              re.DOTALL | re.MULTILINE)
-    timestamp_re = re.compile(r'^\d{4}(?:[ \t]\d+)?(?:[ \t]\w+)?$',
+    timestamp_re = re.compile(r'^\d{3,4}(?:[ \t]\d+)?(?:[ \t]\w+)?$',
                               re.MULTILINE)
     matches = full_log_re.finditer(log_str)
     result = []
@@ -52,23 +52,23 @@ def parse_log_re(log_str):
     return result
 
 
-def parse_log_re24h(log_str):
-    def to_PM(time: str) -> str:
-        return time
+# def parse_log_re24h(log_str):
+#     def to_PM(time: str) -> str:
+#         return time
 
-    full_log_re = re.compile(r'^(\d{4}-\d{2}-\d{2})\s*(.*)$',
-                             re.DOTALL | re.MULTILINE)
-    timestamp_re = re.compile(r'^\d{3,4}(?:[ \t]\d+)?(?:[ \t]\w+)?$',
-                              re.MULTILINE)
-    matches = full_log_re.finditer(log_str)
-    result = []
-    for match in matches:
-        date, rest = match.groups()
-        timestamps = timestamp_re.findall(rest)
-        # timestamps = ['306', '529', ... ]
-        _timestamps = [to_PM(t) for t in timestamps]
-        result.append((date, _timestamps))
-    return result
+#     full_log_re = re.compile(r'^(\d{4}-\d{2}-\d{2})\s*(.*)$',
+#                              re.DOTALL | re.MULTILINE)
+#     timestamp_re = re.compile(r'^\d{3,4}(?:[ \t]\d+)?(?:[ \t]\w+)?$',
+#                               re.MULTILINE)
+#     matches = full_log_re.finditer(log_str)
+#     result = []
+#     for match in matches:
+#         date, rest = match.groups()
+#         timestamps = timestamp_re.findall(rest)
+#         # timestamps = ['306', '529', ... ]
+#         _timestamps = [to_PM(t) for t in timestamps]
+#         result.append((date, _timestamps))
+#     return result
 
 
 def get_vol_note(vol_str):

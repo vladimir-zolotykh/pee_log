@@ -26,15 +26,10 @@ def test_log(input_file: str) -> bool:
     with open(input_file) as fd:
         log_str = fd.read()
         num_lines = log_str.count('\n')
-        # parse_res = parse_log_re.parse_log_re(log_str)
-        parse_res = parse_log_re.parse_log_re24h(log_str)
+        parse_res = parse_log_re.parse_log_re(log_str)
+        # parse_res = parse_log_re.parse_log_re24h(log_str)
         times0 = parse_res[0][1]
-        print(f'{times0 = }')
         times24H = to24H(times0)
-        # print(f'{times_24H = }')
-        # in the next line `input_file' is needed for error messages
-
-        # if not validate(parse_res[0][1], input_file, verbose=False):
         if not validate(times24H, input_file, verbose=False):
             return True
     if num_lines == 1 + len(parse_res[0][1]):
