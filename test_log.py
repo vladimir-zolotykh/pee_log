@@ -24,7 +24,10 @@ def test_log(input_file: str) -> bool:
     False to abort scanning
     """
     with open(input_file) as fd:
-        log_str = fd.read()
+        lines = fd.readlines()
+        log_str2 = ''.join((s for s in lines if s != '\n'))
+        log_str = log_str2
+        # log_str: str = fd.read()
         num_lines = log_str.count('\n')
         parse_res = parse_log_re.parse_log_re(log_str)
         # parse_res = parse_log_re.parse_log_re24h(log_str)
@@ -42,7 +45,7 @@ def test_log(input_file: str) -> bool:
         print(f'{input_file:40s}: {num_lines:2d}\n'
               f'{"parse_log_re":40s}: {1 + len(parse_res[0][1]):2d}\n'
               f'Likely {input_file} has empty lines(s) in the end')
-        return False
+        return True
 
 
 parser = argparse.ArgumentParser(
