@@ -29,10 +29,8 @@ def test_log(input_file: str) -> bool:
         parse_res = parse_log_re.parse_log_re(log_str)
         # parse_res = parse_log_re.parse_log_re24h(log_str)
         times0 = parse_res[0][1]
-        print(f'{times0 = }')
         # remove tags & volumes
         _times0 = [(lambda s: s[:4])(s) for s in times0]
-        print(f'{_times0 = }')
         times0 = _times0
         times24H = to24H(times0)
         if not validate(times24H, input_file, verbose=False):
