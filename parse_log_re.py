@@ -41,8 +41,11 @@ def parse_log_re(log_str):
     #                          re.DOTALL | re.MULTILINE)
     full_log_re = re.compile(r'^(\d{4}-\d{2}-\d{2})\s*(.*)$',
                              re.DOTALL | re.MULTILINE)
-    timestamp_re = re.compile(r'^\d{3,4}(?:[ \t]\d+)?(?:[ \t]\w+)?$',
-                              re.MULTILINE)
+    # timestamp_re = re.compile(r'^\d{3,4}(?:[ \t]\d+)?(?:[ \t]\w+)?$',
+    #                           re.MULTILINE)
+    timestamp_re = re.compile(
+        r'^\d{3,4}(?:[ \t]\d+)?(?:(?:[ \t]\w+)|(?:[ \t]#.*))*$',
+        re.MULTILINE)
     matches = full_log_re.finditer(log_str)
     result = []
     for match in matches:

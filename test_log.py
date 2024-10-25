@@ -24,7 +24,10 @@ def test_log(input_file: str) -> bool:
     False to abort scanning
     """
     with open(input_file) as fd:
-        log_str = ''.join(line for line in fd if line.strip())
+        log_str = ''.join(
+            line for line in (line for line in fd if line.strip()) if
+            (not line.startswith('#'))
+        )
         num_lines = log_str.count('\n')
         parse_res = parse_log_re.parse_log_re(log_str)
         times0 = parse_res[0][1]
@@ -35,7 +38,7 @@ def test_log(input_file: str) -> bool:
         if not validate(times24H, input_file, verbose=False):
             return True
     if num_lines == 1 + len(parse_res[0][1]):
-        print(f'"{input_file}" OK')
+        print(f'"{input_file}": OK')
         return True
     else:
         print(f'{input_file:40s}: {num_lines:2d}\n'
